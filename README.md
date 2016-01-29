@@ -1,6 +1,6 @@
 # Voting Application built on Clementine.js FCC Boilerplate
 
-[Voting Application deployed on c9.io](https://voting-app-rfprod.c9users.io/login)
+[Voting Application deployed on c9.io](https://voting-app-rfprod.c9users.io/)
 
 ## Overview
 

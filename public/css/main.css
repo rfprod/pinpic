@@ -1,125 +1,59 @@
-/********* Fonts **********/
-
+.home {background: transparent url('#') fixed center top / cover;min-height: 98vh;height: auto !important;margin-top: 2vh;}
+.nopadding {padding: 0;}
+body {color:#000000; font-family: 'Play', sans-serif;font-size: 2.2em;overflow-x:hidden;}
+.navbar-brand {font-size: 1em;}
+.cllps-toggler {display:block;text-align:center;}
+.cllps-toggler:hover {text-decoration:none;}
+.sect {padding-top: 4vh;}
+p {margin-top:0.5vh;}
+.credits {display:block;text-align:center;font-size:0.75em;}
+.credits a:hover {text-decoration:none;}
+.output {text-align:center;}
+.output a {color:#000000;}
+.output a:hover {text-decoration:none;}
+.profile {margin-top:2vh;}
+.polls {margin-top:2.5vh;}
+.legend {display:block;}
+.chrt-legend{display:inline-block;margin-bottom:0.1em;color:#ffffff;}
+/****************************/
+/* Clementine default style */
+/********** Fonts ***********/
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
   font-weight: 400;
   src: local('Roboto'), local('Roboto-Regular'), url('../fonts/Roboto-Regular.ttf') format('truetype');
 }
-
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
   font-weight: 500;
   src: local('Roboto Medium'), local('Roboto-Medium'), url('../fonts/Roboto-Medium.ttf') format('truetype');
 }
-
 /****** Main Styling ******/
-
-body {
-	font-family: 'Roboto', sans-serif;
-	font-size: 16px;
-	margin: 0;
-	padding: 0;
-}
-
-header {
-	color: #00BCD4;
-	height: 56px;
-	margin: 0 0 14px 0;
-	text-align: center;
-}
-
-p {
-	margin: 8px 0 0 0;
-}
-
-.container p {
-	text-align: center;
-	padding: 0;
-}
-
+body {font-family: 'Roboto', sans-serif;font-size: 16px;margin: 0;padding: 0;}
+header {color: #00BCD4;height: 56px;margin: 0 0 14px 0;text-align: center;}
+p {margin: 8px 0 0 0;}
+.container p {text-align: center;padding: 0;}
 /****** Header Styling ******/
-
-header p {
-	margin: 16px 0 5px 0;
-}
-
-.menu {
-	text-decoration: none;
-	padding: 6px;
-	margin: 0;
-	color: #727272;
-}
-
-.menu:visited {
-	color: #727272;
-}
-
-.menu:hover {
-	color: #FFA000;
-}
-
-.menu:active {
-	color: #FF630D;
-}
-
-header a ~ p {
-	margin: 0;
-	padding: 0;
-	display: inline;
-	color: #ECEFF1;
-}
-
-#display-name {
-	font-weight: 400;
-}
-
+header p {margin: 16px 0 5px 0;}
+.menu {text-decoration: none;padding: 6px;margin: 0;color: #727272;}
+.menu:visited {color: #727272;}
+.menu:hover {color: #FFA000;}
+.menu:active {color: #FF630D;}
+header a ~ p {margin: 0;padding: 0;display: inline;color: #ECEFF1;}
+#display-name {font-weight: 400;}
 /****** Login Styling ******/
-
-.login {
-	margin: 86px auto 0 auto;
-	text-align: center;
-}
-
-#login-btn {
-	width: 225px;
-	padding: 7px 5px;
-}
-
-.btn p {
-	margin: 8px 0 0 0;
-	padding: 0;
-}
-
-.btn > img {
-	float: left;
-	margin-left: 10px
-}
-
+.login {margin: 86px auto 0 auto;text-align: center;}
+#login-btn {width: 225px;padding: 7px 5px;}
+.btn p {margin: 8px 0 0 0;padding: 0;}
+.btn > img {float: left;margin-left: 10px}
 /****** Logo Div Styling ******/
-
-img {
-	margin: 0 auto;
-	display: block;
-}
-
-.clementine-text { /* Styling for the Clementine.js text */
-	padding: 0;
-	margin: -25px 0 0 0;
-	font-weight: 500;
-	font-size: 60px;
-	color: #FFA000;
-}
-
+img {margin: 0 auto;display: block;}
+.clementine-text {padding: 0;margin: -25px 0 0 0;font-weight: 500;font-size: 60px;color: #FFA000;}
 /****** Click Styling ******/
-
-.btn-container {	/* Styling for the div that contains the buttons */
-	margin: -10px auto 0 auto;
-	text-align: center;
-}
-
-.btn {	/* Styling for buttons */
+.btn-container {margin: -10px auto 0 auto;text-align: center;}
+.btn {
 	margin: 0 8px;
 	color: white;
 	background-color: #00BCD4;
@@ -132,27 +66,11 @@ img {
 	font-weight: 500;
 }
 
-.btn:focus {	/* Remove outline when hovering over button */
-	outline: none;
-}
-
-.btn:active {	/* Scale the button down by 10% when clicking on button */
-	transform: scale(0.9, 0.9);
-	-webkit-transform: scale(0.9, 0.9);
-	-moz-transform: scale(0.9, 0.9);
-}
-
-.btn-delete {	/* Styling for delete button */
-	background-color: #ECEFF1;
-	color: #212121;
-}
-
-#click-nbr {
-	font-weight: 400;
-}
-
+.btn:focus {outline: none;}
+.btn:active {transform: scale(0.9, 0.9);-webkit-transform: scale(0.9, 0.9);-moz-transform: scale(0.9, 0.9);}
+.btn-delete {background-color: #ECEFF1;color: #212121;}
+#click-nbr {font-weight: 400;}
 /****** Profile Styling ******/
-
 .github-profile {
 	width: 350px;
 	height: 200px;
@@ -162,43 +80,12 @@ img {
 	text-align: center;
 	color: #000;
 }
-
-.github-profile p:first-child {
-	padding-top: 16px;
-}
-
-.github-profile p:nth-child(5) {
-	margin-bottom: 16px
-}
-
-.github-profile p {
-	margin: 0 0 0 16px;
-	text-align: left;
-}
-
-.profile-value {
-	font-weight: 400;
-}
-
-span {
-	font-weight: 500;
-}
-
-.github-profile > img {
-	padding-top: 16px;
-	margin-bottom: 16px;
-}
-
-.github-profile .menu:hover {
-	color: #FFA000;
-}
-
-.github-profile .menu:active {
-	color: #FF630D;
-}
-
-#menu-divide {
-	color: #FFFFFF;
-	display: inline;
-	margin: 0;
-}
+.github-profile p:first-child {padding-top: 16px;}
+.github-profile p:nth-child(5) {margin-bottom: 16px}
+.github-profile p {margin: 0 0 0 16px;text-align: left;}
+.profile-value {font-weight: 400;}
+span {font-weight: 500;}
+.github-profile > img {padding-top: 16px;margin-bottom: 16px;}
+.github-profile .menu:hover {color: #FFA000;}
+.github-profile .menu:active {color: #FF630D;}
+#menu-divide {color: #FFFFFF;display: inline;margin: 0;}

@@ -1,30 +1,214 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Clementine.js - The elegant and lightweight full stack JavaScript boilerplate.</title>
+		<title>Votin App</title>
 		<script src="/public/js/jquery.min.js"></script>
 	    <link href="/public/css/bootstrap.min.css" rel="stylesheet">
 	    <script src="/public/js/bootstrap.min.js"></script>
 	    <script src="/public/js/chart.js"></script>
 		<link href="/public/css/main.css" rel="stylesheet" type="text/css">
+		<link href='https://fonts.googleapis.com/css?family=Play&effect=outline' rel='stylesheet' type='text/css'>
 	</head>
-
 	<body>
-		<div class="container">
-			<div class="github-profile">
-				<img src="/public/img/gh-mark-32px.png" alt="github logo" />
-				<p><span>ID: </span><span id="profile-id" class="profile-value"></span></p>
-				<p><span>Username: </span><span id="profile-username" class="profile-value"></span></p>
-				<p><span>Display Name: </span><span id="display-name" class="profile-value"></span></p>
-				<p><span>Repositories: </span><span id="profile-repos" class="profile-value"></span></p>
-				<a class="menu" href="/">Home</a>
-				<p id="menu-divide">|</p>
-				<a class="menu" href="/logout">Logout</a>
-			</div>
+		<div class="container-fluid nopadding"> 
+		  <nav class="navbar navbar-inverse navbar-fixed-top topnav" role="navigation">
+		    <div class="navbar-header">
+		      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#toggle-nav" aria-expanded="false">
+		        <span class="sr-only">Toggle navigation</span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		      </button>
+		      <a class="navbar-brand" target=_blank href="http://codepen.io/rfprod"><span class="glyphicon glyphicon-stats"></span> Voting App</a>
+		    </div>
+		    <div class="collapse navbar-collapse" id="toggle-nav">
+		      <div class="container-fluid"> 
+		        <ul class="nav navbar-nav navbar-right">
+		          	<li class="nav-pills"><a href="/"><span class="glyphicon glyphicon-search"></span> All Polls</a></li>
+		          	<li class="nav-pills active"><a href="#app"><span class="glyphicon glyphicon-user"></span> My Polls</a></li>
+		          	<li class="nav-pills"><a href="/logout"><span class="glyphicon glyphicon-remove"></span> Logout</a></li>
+		        </ul>
+		      </div>
+		    </div>
+		  </nav>
+		  <a name="app"></a>
+		  <div class="home sect">
+		    <div class="container-fluid">
+		      <div class="col-md-12">
+		        <p class="output"> 
+		          	<div class="row profile">
+						<img src="/public/img/gh-mark-32px.png" alt="github logo" />
+						<span class="col-xs-3 col-sm-3 col-md-3 col-lg-3">ID: <span id="profile-id" class="profile-value"></span></span>
+						<span class="col-xs-3 col-sm-3 col-md-3 col-lg-3">Username: <span id="profile-username" class="profile-value"></span></span>
+						<span class="col-xs-3 col-sm-3 col-md-3 col-lg-3">Display Name: <span id="display-name" class="profile-value"></span></span>
+						<span class="col-xs-3 col-sm-3 col-md-3 col-lg-3">Repositories: <span id="profile-repos" class="profile-value"></span></span>
+					</div>
+					<div class="row polls">
+						<div class="panel-group" id="accordion">
+							<div class="panel panel-default">
+								<div class="panel-heading" type="button">
+									 <h4 class="panel-title">
+										  <a aria-expanded="false" class="cllps-toggler collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">My Poll #1</a>
+									 </h4>
+								</div>
+								<div style="height: 0px;" aria-expanded="false" id="collapseOne" class="panel-collapse collapse">								
+									<div class="panel-body">
+										<canvas id="poll" class="col-xs-12 col-sm-8 col-md-8 col-lg-8"></canvas>
+										<span class="legend">
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#0099CC;">Option #1</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#800000;">Option #2</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#FFFFB3;">Option #3</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#B3FFFF;">Option #4</span>
+											<!--
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#993399;">Option #5</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#FF9966;">Option #6</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#0033CC;">Option #7</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#66CCFF;">Option #8</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#408000;">Option #9</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#FF99FF;">Option #10</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#FFFF00;">Option #11</span>
+											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#66FF99;">Option #12</span>
+											-->
+										</span>
+										<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+											<p>Some text.</p>
+											<button type="button" class="btn btn-info btn-sm">Button 1</button>
+											<button type="button" class="btn btn-info btn-sm">Button 2</button>
+											<button type="button" class="btn btn-info btn-sm">Button 3</button>
+											<button type="button" class="btn btn-info btn-sm">Button 4</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+		        </p>
+		        <div class="container">
+					<p>You have clicked the button <span id="click-nbr"></span> times.</p>
+					<br />
+					<div class="btn-container">
+						<button type="submit" class="btn btn-add">CLICK ME!</button>
+						<button class="btn btn-delete">RESET</button>
+					</div>
+				</div>
+		        <span class="credits">credits</span>
+		      </div>
+		    </div>
+		  </div>
 		</div>
-		
 		<script type="text/javascript" src="common/ajax-functions.js"></script>
+		<script type="text/javascript" src="controllers/clickController.client.js"></script>
 		<script type="text/javascript" src="controllers/userController.client.js"></script>
+		<script>
+		$(document).ready(function(){
+			$('#collapseOne').bind('shown.bs.collapse', function (e) {
+				drawDoughbutChart();
+				$('html, body').animate({
+					scrollTop: $(this).parent().offset().top-$("nav").height()
+				});
+			});
+			function drawDoughbutChart(){
+				var graphLabels = ["2012","2013","2014"];
+				var absoluteLiquidity = ["113","102","205"];
+				var doughnutContext = $("#poll").get(0).getContext("2d");
+				doughnutContext.canvas.height = 175;
+				var bondsAndSharesData = [
+					{
+						value: 4,
+						color:"#0099CC",
+						highlight: "#00BFFF",
+						label: "Option #1"
+					},
+					{
+						value: 4,
+						color: "#800000",
+						highlight: "#B30000",
+						label: "Option #2"
+					},
+					{
+						value: 10,
+						color: "#FFFFB3",
+						highlight: "#FFFFCC",
+						label: "Option #3"
+					},
+					{
+						value: 1,
+						color: "#B3FFFF",
+						highlight: "#CCFFFF",
+						label: "Option #4"
+					}/*,
+					{
+						value: 10,
+						color: "#993399",
+						highlight: "#bf40bf",
+						label: "Option #5"
+					},
+					{
+						value: 2,
+						color: "#FF9966",
+						highlight: "#FFBB99",
+						label: "Option #6"
+					},
+					{
+						value: 4,
+						color: "#0033CC",
+						highlight: "#0040FF",
+						label: "Option #7"
+					},
+					{
+						value: 4,
+						color: "#66CCFF",
+						highlight: "#99DDFF",
+						label: "Option #8"
+					},
+					{
+						value: 8,
+						color: "#408000",
+						highlight: "#59b300",
+						label: "Option #9"
+					},
+					{
+						value: 10,
+						color: "#FF99FF",
+						highlight: "#e8b0e8",
+						label: "Option #10"
+					},
+					{
+						value: 37,
+						color: "#FFFF00",
+						highlight: "#FFFF33",
+						label: "Option #11"
+					},
+					{
+						value: 6,
+						color: "#66FF99",
+						highlight: "#99FFBB",
+						label: "Option #12",
+					}*/
+				];
+				var bondsAndSharesOptions = {
+					segmentShowStroke : true,
+					segmentStrokeColor : "rgba(0,0,0,0.2)",
+					segmentStrokeWidth : 2,
+					percentageInnerCutout : 50,
+					animationSteps : 100,
+					animationEasing : "easeOutBounce",
+					animateRotate : true,
+					animateScale : true,
+					legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){%><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>",
+					tooltipTemplate: "<%= label %>: <%= value %>",
+					tooltipFontSize: 16,
+					tooltipFontStyle: "bold",
+					tooltipFontColor: "#fff",
+					tooltipTitleFontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif"
+				};
+				var doughnutChart = new Chart(doughnutContext).Doughnut(bondsAndSharesData, bondsAndSharesOptions);
+				window.onresize = function(event) {
+					doughnutChart.destroy();
+					doughnutChart = new Chart(doughnutContext).Doughnut(bondsAndSharesData, bondsAndSharesOptions);
+				};
+			}
+		});
+		</script>
 	</body>
-
 </html>
