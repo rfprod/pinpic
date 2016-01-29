@@ -1,6 +1,6 @@
-# Clementine.js FCC Boilerplate
+# Voting Application built on Clementine.js FCC Boilerplate
 
-[![Join the chat at https://gitter.im/johnstonbl01/clementinejs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/johnstonbl01/clementinejs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[Voting Application deployed on c9.io](https://voting-app-rfprod.c9users.io/login)
 
 ## Overview
 
