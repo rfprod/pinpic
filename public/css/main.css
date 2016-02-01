@@ -14,7 +14,9 @@ p {margin-top:0.5vh;}
 .profile {margin-top:2vh;}
 .polls {margin-top:2.5vh;}
 .legend {display:block;}
-.chrt-legend{display:inline-block;margin-bottom:0.1em;color:#ffffff;}
+.chrt-legend {display:inline-block;margin-bottom:0.1em;color:#ffffff;}
+.btn-toolbar {text-align:center;width:auto;max-width:100%;}
+#add-poll {width:100%;}
 /****************************/
 /* Clementine default style */
 /********** Fonts ***********/
@@ -46,14 +48,14 @@ header a ~ p {margin: 0;padding: 0;display: inline;color: #ECEFF1;}
 /****** Login Styling ******/
 .login {margin: 86px auto 0 auto;text-align: center;}
 #login-btn {width: 225px;padding: 7px 5px;}
-.btn p {margin: 8px 0 0 0;padding: 0;}
-.btn > img {float: left;margin-left: 10px}
+.custom-btn p {margin: 8px 0 0 0;padding: 0;}
+.custom-btn > img {float: left;margin-left: 10px}
 /****** Logo Div Styling ******/
 img {margin: 0 auto;display: block;}
 .clementine-text {padding: 0;margin: -25px 0 0 0;font-weight: 500;font-size: 60px;color: #FFA000;}
 /****** Click Styling ******/
-.btn-container {margin: -10px auto 0 auto;text-align: center;}
-.btn {
+.custom-btn-container {margin: -10px auto 0 auto;text-align: center;}
+.custom-btn {
 	margin: 0 8px;
 	color: white;
 	background-color: #00BCD4;
@@ -66,9 +68,9 @@ img {margin: 0 auto;display: block;}
 	font-weight: 500;
 }
 
-.btn:focus {outline: none;}
-.btn:active {transform: scale(0.9, 0.9);-webkit-transform: scale(0.9, 0.9);-moz-transform: scale(0.9, 0.9);}
-.btn-delete {background-color: #ECEFF1;color: #212121;}
+.custom-btn:focus {outline: none;}
+.custom-btn:active {transform: scale(0.9, 0.9);-webkit-transform: scale(0.9, 0.9);-moz-transform: scale(0.9, 0.9);}
+.custom-btn-delete {background-color: #ECEFF1;color: #212121;}
 #click-nbr {font-weight: 400;}
 /****** Profile Styling ******/
 .github-profile {

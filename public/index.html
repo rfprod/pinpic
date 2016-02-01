@@ -19,7 +19,7 @@
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" target=_blank href="http://codepen.io/rfprod"><span class="glyphicon glyphicon-stats"></span> Voting App</a>
+		      <a class="navbar-brand" href="https://voting-app-rfprod.c9users.io"><span class="glyphicon glyphicon-stats"></span> Voting App</a> <a class="navbar-brand" href="https://github.com/rfprod/voting-application" target="_blank">GitHub Repo</a>
 		    </div>
 		    <div class="collapse navbar-collapse" id="toggle-nav">
 		      <div class="container-fluid"> 
@@ -63,9 +63,13 @@
 		        <div class="container">
 					<p>You have clicked the button <span id="click-nbr"></span> times.</p>
 					<br />
-					<div class="btn-container">
-						<button type="submit" class="btn btn-add">CLICK ME!</button>
-						<button class="btn btn-delete">RESET</button>
+					<div class="btn-group btn-group-justified" role="group">
+						<div class="btn-group" role="group">
+							<button type="submit" class="btn btn-info btn-add">CLICK ME!</button>
+						</div>
+						<div class="btn-group" role="group">
+							<button class="btn btn-warning btn-delete">RESET</button>
+						</div>
 					</div>
 				</div>
 		        <span class="credits">credits</span>
@@ -79,91 +83,47 @@
 		<script>
 		$(document).ready(function(){
 			$('#collapseOne').bind('shown.bs.collapse', function (e) {
-				drawDoughbutChart();
-				$('html, body').animate({
-					scrollTop: $(this).parent().offset().top-$("nav").height()
-				});
+				drawDoughbutChart(4);
+				$('html, body').animate({scrollTop: $(this).parent().offset().top-$("nav").height()});
 			});
-			function drawDoughbutChart(){
-				var graphLabels = ["2012","2013","2014"];
-				var absoluteLiquidity = ["113","102","205"];
+			function getRandomColor(){
+				function c(){return Math.floor(Math.random()*256).toString(16);}
+				var colorHEX = "#"+c()+c()+c();
+				if (colorHEX.length < 7) colorHEX += "b";
+				//console.log("colorHEX: "+colorHEX);
+				return colorHEX;
+			}
+			String.prototype.replaceAt = function(index, character){
+			    return this.substr(0, index) + character + this.substr(index+character.length);
+			};
+			var values = [1, 4, 6, 8];
+			var labels = ["Option #1", "Option #2", "Option #3", "Option #4"];
+			function drawDoughbutChart(size){
 				var doughnutContext = $("#poll").get(0).getContext("2d");
 				doughnutContext.canvas.height = 175;
-				var bondsAndSharesData = [
-					{
-						value: 4,
-						color:"#0099CC",
-						highlight: "#00BFFF",
-						label: "Option #1"
-					},
-					{
-						value: 4,
-						color: "#800000",
-						highlight: "#B30000",
-						label: "Option #2"
-					},
-					{
-						value: 10,
-						color: "#FFFFB3",
-						highlight: "#FFFFCC",
-						label: "Option #3"
-					},
-					{
-						value: 1,
-						color: "#B3FFFF",
-						highlight: "#CCFFFF",
-						label: "Option #4"
-					}/*,
-					{
-						value: 10,
-						color: "#993399",
-						highlight: "#bf40bf",
-						label: "Option #5"
-					},
-					{
-						value: 2,
-						color: "#FF9966",
-						highlight: "#FFBB99",
-						label: "Option #6"
-					},
-					{
-						value: 4,
-						color: "#0033CC",
-						highlight: "#0040FF",
-						label: "Option #7"
-					},
-					{
-						value: 4,
-						color: "#66CCFF",
-						highlight: "#99DDFF",
-						label: "Option #8"
-					},
-					{
-						value: 8,
-						color: "#408000",
-						highlight: "#59b300",
-						label: "Option #9"
-					},
-					{
-						value: 10,
-						color: "#FF99FF",
-						highlight: "#e8b0e8",
-						label: "Option #10"
-					},
-					{
-						value: 37,
-						color: "#FFFF00",
-						highlight: "#FFFF33",
-						label: "Option #11"
-					},
-					{
-						value: 6,
-						color: "#66FF99",
-						highlight: "#99FFBB",
-						label: "Option #12",
-					}*/
-				];
-				var bondsAndSharesOptions = {
+				var palette = [];
+				var highlights = [];
+				var data = [];
+				for (var i=0;i<size;i++){
+					(function getUniquePalette(){
+						var randomColor = getRandomColor();
+						if (palette.indexOf(randomColor) === -1 && highlights.indexOf(randomColor) === -1) palette.push(randomColor);
+						else getUniquePalette();
+					})();
+					(function getUniqueHighlights(){
+						var randomColor = getRandomColor();
+						if (palette.indexOf(randomColor) === -1 && highlights.indexOf(randomColor) === -1) highlights.push(randomColor);
+						else getUniqueHighlights();
+					})();
+					data.push({
+						value: parseInt(values[i],10),
+						color: palette[i],
+						highlight: highlights[i],
+						label: labels[i]
+					});
+				}
+				console.log("palette: "+palette+" | "+"highlights: "+highlights);
+				var options = {
 					segmentShowStroke : true,
 					segmentStrokeColor : "rgba(0,0,0,0.2)",
 					segmentStrokeWidth : 2,
@@ -179,10 +139,10 @@
 					tooltipFontColor: "#fff",
 					tooltipTitleFontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif"
 				};
-				var doughnutChart = new Chart(doughnutContext).Doughnut(bondsAndSharesData, bondsAndSharesOptions);
+				var doughnutChart = new Chart(doughnutContext).Doughnut(data, options);
 				window.onresize = function(event) {
 					doughnutChart.destroy();
-					doughnutChart = new Chart(doughnutContext).Doughnut(bondsAndSharesData, bondsAndSharesOptions);
+					doughnutChart = new Chart(doughnutContext).Doughnut(data, options);
 				};
 			}
 		});
