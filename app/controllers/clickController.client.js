@@ -4,6 +4,7 @@
    var addButton = document.querySelector('.btn-add');
    var deleteButton = document.querySelector('.btn-delete');
    var addPoll = document.querySelector('.btn-add-poll');
+   var postVote = document.querySelector('.btn-post-vote');
    var clickNbr = document.querySelector('#click-nbr');
    var apiUrl = appUrl + '/api/:id/clicks';
    function updateClickCount (data) {
@@ -22,6 +23,11 @@
       });
    }, false);
    addPoll.addEventListener('click', function(){
+      ajaxFunctions.ajaxRequest('POST', apiUrl, function(){
+         ajaxFunctions.ajaxRequest('GET', apiUrl, updateClickCount);
+      });
+   }, false);
+   postVote.addEventListener('click', function(){
       ajaxFunctions.ajaxRequest('POST', apiUrl, function(){
          ajaxFunctions.ajaxRequest('GET', apiUrl, updateClickCount);
       });

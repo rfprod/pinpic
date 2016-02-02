@@ -9,6 +9,8 @@ module.exports = function (app, passport, jsdom, fs) {
 	
 	var jquerySource = fs.readFileSync(path + "/public/js/jquery.min.js", "utf-8");
 	var serializeDocument = jsdom.serializeDocument;
+	var htmlUIuniformButton = "<button type='button' class='btn btn-info btn-sm'>Button 1</button>";
+	var htmlUIuniformDropdownOption = "<option value='one'>One</option>";
 
 	function isLoggedIn (req, res, next) {
 		if (req.isAuthenticated()) return next();
@@ -37,9 +39,10 @@ module.exports = function (app, passport, jsdom, fs) {
 						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
 						var pollId = "";
 						var pollName = "";
-						var pollValues = [];
-						var pollLabels = [];
-						var pollLength = pollValues.length;
+						var pollQuestion = "";
+						var pollVotes = [];
+						var pollOptions = [];
+						var pollLength = pollVotes.length;
 						console.log('getting polls data from DB');
 						Polls.find({}, function(err, docs) {
 						    if (err) throw err;
@@ -47,22 +50,35 @@ module.exports = function (app, passport, jsdom, fs) {
 					        if (docs.length == 0) console.log('polls do not exist');
 					        else {
 					        	console.log('at least one poll exists');
-					        	var i=0;
+					        	var chartInitialization = "<script>$(document).ready(function(){";
+					        	var chartInitializationENDING = "});</script>";
 					        	for (var i=0;i<docs.length;i++){
 					        		pollId = "poll-"+docs[i]._id;
 					        		pollName = docs[i].displayName;
-									pollValues = docs[i].votes;
-									pollLabels = docs[i].options;
-									pollLength = pollValues.length;
+					        		pollQuestion = docs[i].question;
+									pollVotes = docs[i].votes;
+									pollOptions = docs[i].options;
+									pollLength = pollVotes.length;
 									$('.polls').append(pollTemplate);
 									$('.poll-heading').last().html(pollName);
 									$('.poll-heading').last().attr('href','#'+pollId);
 									$('.poll-internals').last().attr('id',pollId);
+									$('input[id="poll-id"]').last().attr('value',docs[i]._id);
+									$('canvas').last().attr('id',docs[i]._id);
+									$('.poll-question').last().html(pollQuestion);
+									for (var z=0;z<pollVotes.length;z++){
+										$('.options-selector').last().append(htmlUIuniformDropdownOption);
+										$('option').last().val(pollOptions[z]);
+										$('option').last().html(pollOptions[z]);
+									}
 									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart(4, [1, 4, 6, 8], ['Option #1', 'Option #2', 'Option #3', 'Option #4']);$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
-									var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+pollLength+", "+JSON.stringify(pollValues)+", "+JSON.stringify(pollLabels)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
+									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
+									chartInitialization += "$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+docs[i]._id+", "+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});";
 									//console.log("chartInitialization: "+chartInitialization);
-									$('polls').append(chartInitialization);
+									
 					        	}
+					        	chartInitialization += chartInitializationENDING;
+					        	$('body').append(chartInitialization);
 								console.log("index page DOM manipulations complete");
 								var newHtml = serializeDocument(window.document);
 								res.send(newHtml);
@@ -151,6 +167,30 @@ module.exports = function (app, passport, jsdom, fs) {
     	//res.send("you posted: "+JSON.stringify(req.body));
     	req.session.valid = true;
   		res.redirect('/profile');
+	});
+	app.route(/votepost/).post(function(req, res){
+		var returnToReferer = req.headers.referer;
+		returnToReferer = returnToReferer.substr(returnToReferer.indexOf(".io")+3,returnToReferer.length);
+		//console.log(returnToReferer);
+    	//console.log('req: '+JSON.stringify(req.body));
+    	var pollId = req.body.pollid;
+    	var pollVote = req.body.vote;
+    	Polls.find({_id: parseInt(pollId,10)}, function(err,data){
+	    	if (err) throw err;
+	    	var addVoteIndex = data[0].options.indexOf(pollVote);
+	    	var updatedVotes = data[0].votes;
+	    	updatedVotes[addVoteIndex]++;
+	    	console.log('updatedVotes: '+JSON.stringify(updatedVotes));
+	    	console.log("addVoteIndex: "+addVoteIndex);
+	    	Polls.update({_id: parseInt(pollId,10)}, {$set: {votes: updatedVotes}},function(err,data){
+	    		if(err) throw err;
+	    		console.log(data);
+	    	});
+	        console.log('poll id '+pollId+': '+JSON.stringify(data));
+	    });
+    	//res.send("you posted: "+JSON.stringify(req.body));
+    	req.session.valid = true;
+  		res.redirect(returnToReferer);
 	}); 
 	app.route('/api/:id').get(isLoggedIn, function (req, res) {res.json(req.user.github);});
 	app.route('/auth/github').get(passport.authenticate('github'));

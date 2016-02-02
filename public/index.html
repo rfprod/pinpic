@@ -35,7 +35,8 @@
 		  <div class="home sect">
 		    <div class="container-fluid">
 		      <div class="col-md-12">
-				<div class="output row polls"></div>
+				<div class="output row polls panel-group" id="accordion">
+				</div>
 		        <div class="container">
 					<p>You have clicked the button <span id="click-nbr"></span> times.</p>
 					<br />
@@ -67,8 +68,9 @@
 			String.prototype.replaceAt = function(index, character){
 			    return this.substr(0, index) + character + this.substr(index+character.length);
 			};
-			function drawDoughbutChart(size, values, labels){
-				var doughnutContext = $("#poll").get(0).getContext("2d");
+			function drawDoughbutChart(id, size, values, labels){
+				var pid = "#"+id;
+				var doughnutContext = $(pid).get(0).getContext("2d");
 				doughnutContext.canvas.height = 175;
 				var palette = [];
 				var highlights = [];
