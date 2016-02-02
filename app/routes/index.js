@@ -5,7 +5,10 @@ var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 
 var Polls = require('../models/polls');
 
-module.exports = function (app, passport) {
+module.exports = function (app, passport, jsdom, fs) {
+	
+	var jquerySource = fs.readFileSync(path + "/public/js/jquery.min.js", "utf-8");
+	var serializeDocument = jsdom.serializeDocument;
 
 	function isLoggedIn (req, res, next) {
 		if (req.isAuthenticated()) return next();
@@ -13,7 +16,29 @@ module.exports = function (app, passport) {
 	}
 	var clickHandler = new ClickHandler();
 
-	app.route('/').get(isLoggedIn, function (req, res) {res.sendFile(path + '/public/index.html');});
+	app.route('/').get(isLoggedIn, function (req, res) {
+		var htmlSourceIndex = null;
+		fs.readFile(path + "/public/index.html", "utf-8", function (err,data) {
+			if (err) throw err;
+		  	htmlSourceIndex = data;
+		  	jsdom.env({
+				html: htmlSourceIndex,
+				src: [jquerySource],
+				done: function (err, window) {
+					if (err) throw err;
+					var $ = window.$;
+					console.log("profile page DOM successfully retrieved");
+					//console.log($('body').html());
+					$('.polls').html("IT'S ALIVE! ALIVE!!!!");
+					console.log("profile page DOM manipulations complete");
+					var newHtml = serializeDocument(window.document);
+					res.send(newHtml);
+					window.close();
+				}
+			});
+			//res.sendFile(path + '/public/index.html');
+		});
+	});
 	app.route('/login').get(function (req, res) {res.sendFile(path + '/public/login.html');});
 	app.route('/logout').get(function (req, res) {
 		req.logout();
@@ -23,10 +48,30 @@ module.exports = function (app, passport) {
 		Polls.find({}, function(err, docs) {
 		    if (err) throw err;
 	        console.log('list docs: '+JSON.stringify(docs));
-	        if (docs.length == 0) console.log('documents do not exist');
-	        else console.log('documents exist');
+	        if (docs.length == 0) console.log('polls do not exist');
+	        else console.log('polls exist');
 		});
-		res.sendFile(path + '/public/profile.html');
+		var htmlSourceProfile = null;
+		fs.readFile(path + "/public/profile.html", "utf-8", function (err,data) {
+			if (err) throw err;
+		  	htmlSourceProfile = data;
+		  	jsdom.env({
+				html: htmlSourceProfile,
+				src: [jquerySource],
+				done: function (err, window) {
+					if (err) throw err;
+					var $ = window.$;
+					console.log("profile page DOM successfully retrieved");
+					//console.log($('body').html());
+					$('.polls').html("IT'S ALIVE! ALIVE!!!!");
+					console.log("profile page DOM manipulations complete");
+					var newHtml = serializeDocument(window.document);
+					res.send(newHtml);
+					window.close();
+				}
+			});
+			//res.sendFile(path + '/public/profile.html');
+		});
 	});
 	app.route(/pollpost/).post(isLoggedIn, function(req, res){
     	//console.log('req: '+JSON.stringify(req.body));
@@ -36,7 +81,6 @@ module.exports = function (app, passport) {
     	var pollOptions = req.body.options.replace(/ , /g,',').replace(/ ,/g,',').replace(/, /g,',').split(',');
     	var pollVotes = [];
     	for (var i=0;i<pollOptions.length;i++) pollVotes.push(0);
-    	// get current date
 		var dateLog = "";
 			var date = new Date();
 			var year = date.getFullYear();
