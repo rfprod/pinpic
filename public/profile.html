@@ -35,7 +35,7 @@
 		  <div class="home sect">
 		    <div class="container-fluid">
 		      <div class="col-md-12">
-		        <p class="output"> 
+		        <div class="output"> 
 		          	<div class="row profile">
 						<img src="/public/img/gh-mark-32px.png" alt="github logo" />
 						<span class="col-xs-3 col-sm-3 col-md-3 col-lg-2">ID: <span id="profile-id" class="profile-value"></span></span>
@@ -87,36 +87,8 @@
 							</div>
 						</div>
 					</div>
-					<div class="row polls">
-						<div class="panel-group" id="accordion">
-							<div class="panel panel-default">
-								<div class="panel-heading" type="button">
-									 <h4 class="panel-title">
-										  <a aria-expanded="false" class="cllps-toggler collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">My Poll #1</a>
-									 </h4>
-								</div>
-								<div style="height: 0px;" aria-expanded="false" id="collapseTwo" class="panel-collapse collapse">								
-									<div class="panel-body">
-										<canvas id="poll" class="col-xs-12 col-sm-7 col-md-7 col-lg-7"></canvas>
-										<span class="legend">
-											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#0099CC;">Option #1</span>
-											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#800000;">Option #2</span>
-											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#FFFFB3;">Option #3</span>
-											<span class="label label-default chrt-legend font-effect-outline" style="background-color:#B3FFFF;">Option #4</span>
-										</span>
-										<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-											<p>Some text.</p>
-											<button type="button" class="btn btn-info btn-sm">Button 1</button>
-											<button type="button" class="btn btn-info btn-sm">Button 2</button>
-											<button type="button" class="btn btn-info btn-sm">Button 3</button>
-											<button type="button" class="btn btn-info btn-sm">Button 4</button>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-		        </p>
+					<div class="row polls"></div>
+		        </div>
 		        <div class="container">
 					<p>You have clicked the button <span id="click-nbr"></span> times.</p>
 					<br />
@@ -138,15 +110,12 @@
 		<script type="text/javascript" src="controllers/clickController.client.js"></script>
 		<script type="text/javascript" src="controllers/userController.client.js"></script>
 		<script>
-		$(document).ready(function(){
-			$('#collapseOne').bind('shown.bs.collapse', function (e){
-				$('html, body').animate({scrollTop: $(this).parent().offset().top-$("nav").height()});
-				var ownerID = $('#profile-id').html();
-				$('input[name="owner"]').val(ownerID);
-			});
-			$('#collapseTwo').bind('shown.bs.collapse', function (e){
-				drawDoughnutChart(4);
-				$('html, body').animate({scrollTop: $(this).parent().offset().top-$("nav").height()});
+			$(document).ready(function(){
+				$('#collapseOne').bind('shown.bs.collapse', function (e){
+					$('html, body').animate({scrollTop: $(this).parent().offset().top-$("nav").height()});
+					var ownerID = $('#profile-id').html();
+					$('input[name="owner"]').val(ownerID);
+				});
 			});
 			function getRandomColor(){
 				function c(){return Math.floor(Math.random()*256).toString(16);}
@@ -158,9 +127,7 @@
 			String.prototype.replaceAt = function(index, character){
 			    return this.substr(0, index) + character + this.substr(index+character.length);
 			};
-			var values = [1, 4, 6, 8];
-			var labels = ["Option #1", "Option #2", "Option #3", "Option #4"];
-			function drawDoughnutChart(size){
+			function drawDoughbutChart(size, values, labels){
 				var doughnutContext = $("#poll").get(0).getContext("2d");
 				doughnutContext.canvas.height = 175;
 				var palette = [];
@@ -207,7 +174,6 @@
 					doughnutChart = new Chart(doughnutContext).Doughnut(data, options);
 				};
 			}
-		});
 		</script>
 	</body>
 </html>

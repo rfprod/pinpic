@@ -18,25 +18,60 @@ module.exports = function (app, passport, jsdom, fs) {
 
 	app.route('/').get(isLoggedIn, function (req, res) {
 		var htmlSourceIndex = null;
-		fs.readFile(path + "/public/index.html", "utf-8", function (err,data) {
+		var pollTemplate = null;
+		fs.readFile(path + "/app/models/poll.html","utf-8", function(err,data){
 			if (err) throw err;
-		  	htmlSourceIndex = data;
-		  	jsdom.env({
-				html: htmlSourceIndex,
-				src: [jquerySource],
-				done: function (err, window) {
-					if (err) throw err;
-					var $ = window.$;
-					console.log("profile page DOM successfully retrieved");
-					//console.log($('body').html());
-					$('.polls').html("IT'S ALIVE! ALIVE!!!!");
-					console.log("profile page DOM manipulations complete");
-					var newHtml = serializeDocument(window.document);
-					res.send(newHtml);
-					window.close();
-				}
+			pollTemplate = data;
+			//console.log(pollTemplate);
+			fs.readFile(path + "/public/index.html", "utf-8", function (err,data) {
+				if (err) throw err;
+			  	htmlSourceIndex = data;
+			  	jsdom.env({
+					html: htmlSourceIndex,
+					src: [jquerySource],
+					done: function (err, window) {
+						if (err) throw err;
+						var $ = window.$;
+						console.log("index page DOM successfully retrieved");
+						//console.log($('body').html());
+						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
+						var pollId = "";
+						var pollName = "";
+						var pollValues = [];
+						var pollLabels = [];
+						var pollLength = pollValues.length;
+						console.log('getting polls data from DB');
+						Polls.find({}, function(err, docs) {
+						    if (err) throw err;
+					        //console.log('list docs: '+JSON.stringify(docs));
+					        if (docs.length == 0) console.log('polls do not exist');
+					        else {
+					        	console.log('at least one poll exists');
+					        	var i=0;
+					        	for (var i=0;i<docs.length;i++){
+					        		pollId = "poll-"+docs[i]._id;
+					        		pollName = docs[i].displayName;
+									pollValues = docs[i].votes;
+									pollLabels = docs[i].options;
+									pollLength = pollValues.length;
+									$('.polls').append(pollTemplate);
+									$('.poll-heading').last().html(pollName);
+									$('.poll-heading').last().attr('href','#'+pollId);
+									$('.poll-internals').last().attr('id',pollId);
+									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart(4, [1, 4, 6, 8], ['Option #1', 'Option #2', 'Option #3', 'Option #4']);$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
+									var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+pollLength+", "+JSON.stringify(pollValues)+", "+JSON.stringify(pollLabels)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
+									//console.log("chartInitialization: "+chartInitialization);
+									$('polls').append(chartInitialization);
+					        	}
+								console.log("index page DOM manipulations complete");
+								var newHtml = serializeDocument(window.document);
+								res.send(newHtml);
+								window.close();
+					        }
+						});
+					}
+				});
 			});
-			//res.sendFile(path + '/public/index.html');
 		});
 	});
 	app.route('/login').get(function (req, res) {res.sendFile(path + '/public/login.html');});
