@@ -102,7 +102,7 @@ module.exports = function (app, passport, jsdom, fs) {
 	});
 	app.route('/profile').get(isLoggedIn, function (req, res) {
 		var pollOwnerIdFilter = req.session.passport.user;
-		console.log("pollOwnerIdFilter: "+pollOwnerIdFilter);
+		//console.log("pollOwnerIdFilter: "+pollOwnerIdFilter);
 		Polls.find({}, function(err, docs) {
 		    if (err) throw err;
 	        console.log('list docs: '+JSON.stringify(docs));
@@ -163,6 +163,7 @@ module.exports = function (app, passport, jsdom, fs) {
 									$('.poll-heading').last().attr('href','#'+pollId);
 									$('.poll-internals').last().attr('id',pollId);
 									$('input[id="poll-id"]').last().attr('value',docs[i]._id);
+									$('input[id="edit-poll-id"]').last().attr('value',docs[i]._id);
 									$('canvas').last().attr('id',docs[i]._id);
 									$('.poll-question').last().html(pollQuestion);
 									for (var z=0;z<pollVotes.length;z++){
@@ -170,6 +171,9 @@ module.exports = function (app, passport, jsdom, fs) {
 										$('option').last().val(pollOptions[z]);
 										$('option').last().html(pollOptions[z]);
 									}
+									$('input[id="edit-name"]').last().attr('value',pollName);
+									$('input[id="edit-question"]').last().attr('value',pollQuestion);
+									$('input[id="edit-options"]').last().attr('value',pollOptions);
 									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart(4, [1, 4, 6, 8], ['Option #1', 'Option #2', 'Option #3', 'Option #4']);$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
 									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
 									chartInitialization += "$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+docs[i]._id+", "+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});";
@@ -188,7 +192,7 @@ module.exports = function (app, passport, jsdom, fs) {
 		});
 	});
 	app.route(/pollpost/).post(isLoggedIn, function(req, res){
-    	var pollOwner = req.body.owner;
+		var pollOwner = req.body.owner;
     	var pollName = req.body.name;
     	var pollQuestion = req.body.question;
     	var pollOptions = req.body.options.replace(/ , /g,',').replace(/ ,/g,',').replace(/, /g,',').split(',');
@@ -227,6 +231,41 @@ module.exports = function (app, passport, jsdom, fs) {
 	    });
     	req.session.valid = true;
   		res.redirect('/profile');
+	});
+	app.route(/pollupdate/).post(isLoggedIn, function(req, res){
+		var currentUserId = req.session.passport.user;
+		var pollOwner = "";
+    	var pollId = req.body.pollid;
+    	var pollName = req.body.editname;
+    	var pollQuestion = req.body.editquestion;
+    	var pollOptions = req.body.editoptions.replace(/ , /g,',').replace(/ ,/g,',').replace(/, /g,',').split(',');
+    	var pollVotes = [];
+    	Polls.find({_id: parseInt(pollId,10)}, function(err,data){
+	    	if (err) throw err;
+	    	console.log
+	    	pollOwner = data[0].owner;
+	    	pollVotes = data[0].votes;
+	    	while(pollVotes.length > pollOptions.length) pollVotes.pop();
+	    	while(pollVotes.length < pollOptions.length) pollVotes.push(0);
+	    	console.log('new options: '+JSON.stringify(pollOptions)+' | '+'new votes: '+JSON.stringify(pollVotes));
+	    	console.log('poll owner: '+pollOwner);
+	        console.log('"polls" collection: '+JSON.stringify(data));
+	        if (pollOwner == currentUserId) {
+	        	console.log('updating poll id '+pollId);
+	        	Polls.update({_id: parseInt(pollId,10)}, {$set:{displayName:pollName, question:pollQuestion, options:pollOptions, votes:pollVotes}}, function(err,data){
+			    	if (err) throw err;
+			        console.log('updated poll id '+pollId+': '+JSON.stringify(data));
+			        req.session.valid = true;
+  					res.redirect('/profile');
+			    });
+	        }else{
+	        	console.log('Error: current user is not poll owner');
+	        	req.session.valid = true;
+  				res.redirect('/profile');
+	        }
+	    });
+	    //res.send('you posted: '+JSON.stringify(req.body));
+    	
 	});
 	app.route(/votepost/).post(function(req, res){
 		var returnToReferer = req.headers.referer;
