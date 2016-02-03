@@ -7,7 +7,6 @@
 	    <script src="/public/js/bootstrap.min.js"></script>
 	    <script src="/public/js/chart.js"></script>
 		<link href="/public/css/main.css" rel="stylesheet" type="text/css">
-		<link href='https://fonts.googleapis.com/css?family=Play&effect=outline' rel='stylesheet' type='text/css'>
 	</head>
 	<body>
 		<div class="container-fluid nopadding"> 
@@ -90,7 +89,7 @@
 					<div class="output row polls panel-group" id="accordion">
 					</div>
 		        </div>
-		        <div class="container">
+		        <!--<div class="container">
 					<p>You have clicked the button <span id="click-nbr"></span> times.</p>
 					<br />
 					<div class="btn-group btn-group-justified" role="group">
@@ -102,22 +101,15 @@
 						</div>
 					</div>
 				</div>
-		        <span class="credits">credits</span>
+		        <span class="credits">credits</span>-->
 		      </div>
 		    </div>
 		  </div>
 		</div>
 		<script type="text/javascript" src="common/ajax-functions.js"></script>
-		<script type="text/javascript" src="controllers/clickController.client.js"></script>
+		<!--<script type="text/javascript" src="controllers/clickController.client.js"></script>-->
 		<script type="text/javascript" src="controllers/userController.client.js"></script>
 		<script>
-			$(document).ready(function(){
-				$('#collapseOne').bind('shown.bs.collapse', function (e){
-					$('html, body').animate({scrollTop: $(this).parent().offset().top-$("nav").height()});
-					var ownerID = $('#profile-id').html();
-					$('input[name="owner"]').val(ownerID);
-				});
-			});
 			function getRandomColor(){
 				function c(){return Math.floor(Math.random()*256).toString(16);}
 				var colorHEX = "#"+c()+c()+c();
@@ -128,8 +120,9 @@
 			String.prototype.replaceAt = function(index, character){
 			    return this.substr(0, index) + character + this.substr(index+character.length);
 			};
-			function drawDoughbutChart(size, values, labels){
-				var doughnutContext = $("#poll").get(0).getContext("2d");
+			function drawDoughbutChart(id, size, values, labels){
+				var canvasId = "#"+id;
+				var doughnutContext = $(canvasId).get(0).getContext("2d");
 				doughnutContext.canvas.height = 175;
 				var palette = [];
 				var highlights = [];
