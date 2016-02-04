@@ -51,7 +51,13 @@ module.exports = function (app, passport, jsdom, fs) {
 						console.log('getting polls data from DB');
 						Polls.find({}, function(err, docs) {
 						    if (err) throw err;
-					        if (docs.length == 0) console.log('polls do not exist');
+					        if (docs.length == 0) {
+					        	console.log('polls do not exist');
+					        	console.log("index page DOM manipulations complete");
+								var newHtml = serializeDocument(window.document);
+								res.send(newHtml);
+								window.close();
+					        }
 					        else {
 					        	console.log('at least one poll exists');
 					        	var chartInitialization = "<script>$(document).ready(function(){";
