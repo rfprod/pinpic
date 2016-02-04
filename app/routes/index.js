@@ -127,6 +127,7 @@ module.exports = function (app, passport, jsdom, fs) {
 						var pollVotes = [];
 						var pollOptions = [];
 						var pollLength = pollVotes.length;
+						var totalVotesCount = 0;
 						console.log('getting polls data from DB');
 						Polls.find({owner: pollOwnerIdFilter}, function(err, docs) {
 						    if (err) throw err;
@@ -138,6 +139,7 @@ module.exports = function (app, passport, jsdom, fs) {
 					        if (docs.length == 0) {
 					        	console.log('polls do not exist');
 					        	chartInitialization += chartInitializationENDING;
+					        	$('.polls').append('You have no polls created yet.');
 					        	$('body').append(chartInitialization);
 					        	console.log("index page DOM manipulations complete");
 								newHtml = serializeDocument(window.document);
@@ -146,6 +148,7 @@ module.exports = function (app, passport, jsdom, fs) {
 					        }else{
 					        	console.log('at least one poll exists');
 					        	$('#profile-polls').html(docs.length);
+					        	var tweetLink = "";
 					        	for (var i=0;i<docs.length;i++){
 					        		pollId = "poll-"+docs[i]._id;
 					        		pollName = docs[i].displayName;
@@ -153,10 +156,12 @@ module.exports = function (app, passport, jsdom, fs) {
 									pollVotes = docs[i].votes;
 									pollOptions = docs[i].options;
 									pollLength = pollVotes.length;
+									tweetLink = "https://twitter.com/intent/tweet?text="+pollName+"&url=https://voting-app-rfprod.c9users.io/%23"+pollId;
 									$('.polls').append(pollTemplate);
 									$('.poll-heading').last().html(pollName);
 									$('.poll-heading').last().attr('href','#'+pollId);
 									$('.poll-internals').last().attr('id',pollId);
+									$(".tweet-it").last().attr("href",tweetLink);
 									$('input[id="poll-id"]').last().attr('value',docs[i]._id);
 									$('input[id="edit-poll-id"]').last().attr('value',docs[i]._id);
 									$('input[id="delete-poll-id"]').last().attr('value',docs[i]._id);
@@ -166,6 +171,7 @@ module.exports = function (app, passport, jsdom, fs) {
 										$('.options-selector').last().append(htmlUIuniformDropdownOption);
 										$('option').last().val(pollOptions[z]);
 										$('option').last().html(pollOptions[z]);
+										totalVotesCount += pollVotes[z];
 									}
 									$('input[id="edit-name"]').last().attr('value',pollName);
 									$('input[id="edit-question"]').last().attr('value',pollQuestion);
@@ -174,6 +180,7 @@ module.exports = function (app, passport, jsdom, fs) {
 									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
 									chartInitialization += "$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+docs[i]._id+", "+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});";
 					        	}
+					        	$('#profile-votes').html(totalVotesCount);
 					        	chartInitialization += chartInitializationENDING;
 					        	$('body').append(chartInitialization);
 								console.log("index page DOM manipulations complete");

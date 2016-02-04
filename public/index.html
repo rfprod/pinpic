@@ -18,7 +18,7 @@
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="https://voting-app-rfprod.c9users.io"><span class="glyphicon glyphicon-stats"></span> Voting App</a> <a class="navbar-brand" href="https://github.com/rfprod/voting-application" target="_blank">GitHub Repo</a>
+		      <a class="navbar-brand" href="https://voting-app-rfprod.c9users.io"><span class="glyphicon glyphicon-stats"></span> Voting App</a> <a class="navbar-brand hidden-xs" href="https://github.com/rfprod/voting-application" target="_blank">GitHub Repo</a>
 		    </div>
 		    <div class="collapse navbar-collapse" id="toggle-nav">
 		      <div class="container-fluid"> 
@@ -41,5 +41,12 @@
 		  </div>
 		</div>
 		<script type="text/javascript" src="public/js/frontend-utility.js"></script>
+		<script>
+			$(document).ready(function(){
+				var urlHash = window.location.hash;
+				console.log('url hash: '+urlHash);
+				$('a[href="'+urlHash+'"]').trigger('click');
+			});
+		</script>
 	</body>
 </html>
