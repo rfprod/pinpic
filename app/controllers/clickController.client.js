@@ -1,35 +1,35 @@
 'use strict';
 
 (function () {
-   var addButton = document.querySelector('.btn-add');
-   var deleteButton = document.querySelector('.btn-delete');
-   var addPoll = document.querySelector('.btn-add-poll');
-   var postVote = document.querySelector('.btn-post-vote');
-   var clickNbr = document.querySelector('#click-nbr');
+   var aggrButton = document.querySelector('.btn-aggregate-options');
+   var findButton = document.querySelector('.btn-find-zero-votes');
+   var aggrOut = document.querySelector('#aggregate-output');
    var apiUrl = appUrl + '/api/:id/clicks';
-   function updateClickCount (data) {
+   function updateAggrData (data) {
       var clicksObject = JSON.parse(data);
-      clickNbr.innerHTML = clicksObject.clicks;
+      var str = "";
+      clicksObject.forEach(function(entry){
+         str += "<li class='list-group-item'><strong>"+entry.displayName+"</strong> has <strong>"+entry.numberOfOptions+"</strong> options</li>";
+      });
+      aggrOut.innerHTML = str;
    }
-   ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, updateClickCount));
-   addButton.addEventListener('click', function(){
-      ajaxFunctions.ajaxRequest('POST', apiUrl, function(){
-         ajaxFunctions.ajaxRequest('GET', apiUrl, updateClickCount);
+   function updateFindData (data) {
+      var clicksObject = JSON.parse(data);
+      var str = "";
+      clicksObject.forEach(function(entry){
+         str += "<li class='list-group-item'><strong>"+entry.displayName+"</strong> has <strong>0</strong> votes</li>";
       });
+      aggrOut.innerHTML = str;
+   }
+   //ajaxFunctions.ready(ajaxFunctions.ajaxRequest('GET', apiUrl, updateClickCount));
+   aggrButton.addEventListener('click', function(){
+      //ajaxFunctions.ajaxRequest('POST', apiUrl, function(){
+         ajaxFunctions.ajaxRequest('GET', apiUrl, updateAggrData);
+      //});
    }, false);
-   deleteButton.addEventListener('click', function(){
-      ajaxFunctions.ajaxRequest('DELETE', apiUrl, function(){
-         ajaxFunctions.ajaxRequest('GET', apiUrl, updateClickCount);
-      });
-   }, false);
-   addPoll.addEventListener('click', function(){
-      ajaxFunctions.ajaxRequest('POST', apiUrl, function(){
-         ajaxFunctions.ajaxRequest('GET', apiUrl, updateClickCount);
-      });
-   }, false);
-   postVote.addEventListener('click', function(){
-      ajaxFunctions.ajaxRequest('POST', apiUrl, function(){
-         ajaxFunctions.ajaxRequest('GET', apiUrl, updateClickCount);
-      });
+   findButton.addEventListener('click', function(){
+      //ajaxFunctions.ajaxRequest('DELETE', apiUrl, function(){
+         ajaxFunctions.ajaxRequest('DELETE', apiUrl, updateFindData);
+      //});
    }, false);
 })();

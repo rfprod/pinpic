@@ -1,7 +1,8 @@
 'use strict';
 
 var path = process.cwd();
-//var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
+var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
+var clickHandler = new ClickHandler();
 
 var Polls = require('../models/polls');
 
@@ -320,11 +321,10 @@ module.exports = function (app, passport, jsdom, fs) {
 		successRedirect: '/',
 		failureRedirect: '/login'
 	}));
-	/*
-	var clickHandler = new ClickHandler();
+	
 	app.route('/api/:id/clicks')
 		.get(isLoggedIn, clickHandler.getClicks)
 		.post(isLoggedIn, clickHandler.addClick)
 		.delete(isLoggedIn, clickHandler.resetClicks);
-	*/
+	
 };
