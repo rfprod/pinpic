@@ -4,15 +4,12 @@ var path = process.cwd();
 //var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 
 var Polls = require('../models/polls');
-var Users = require('../models/users');
 
 module.exports = function (app, passport, jsdom, fs) {
 	
 	var jquerySource = fs.readFileSync(path + "/public/js/jquery.min.js", "utf-8");
 	var serializeDocument = jsdom.serializeDocument;
-	var htmlUIuniformButton = "<button type='button' class='btn btn-info btn-sm'>Button 1</button>";
 	var htmlUIuniformDropdownOption = "<option value='one'>One</option>";
-	var htmlChart = "<canvas id='poll' class='col-xs-12 col-sm-7 col-md-7 col-lg-7'></canvas>";
 
 	function isLoggedIn(req, res, next){
 		if (req.isAuthenticated()) return next();
@@ -41,7 +38,6 @@ module.exports = function (app, passport, jsdom, fs) {
 						if (err) throw err;
 						var $ = window.$;
 						console.log("index page DOM successfully retrieved");
-						//console.log($('body').html());
 						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
 						if (isLoggedInBool(req, res)) $('.navbar-right').html(htmlNavAuthed);
 						else $('.navbar-right').html(htmlNavNotAuthed);
@@ -124,7 +120,6 @@ module.exports = function (app, passport, jsdom, fs) {
 						if (err) throw err;
 						var $ = window.$;
 						console.log("profile page DOM successfully retrieved");
-						//console.log($('body').html());
 						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
 						var pollId = "";
 						var pollName = "";
@@ -164,6 +159,7 @@ module.exports = function (app, passport, jsdom, fs) {
 									$('.poll-internals').last().attr('id',pollId);
 									$('input[id="poll-id"]').last().attr('value',docs[i]._id);
 									$('input[id="edit-poll-id"]').last().attr('value',docs[i]._id);
+									$('input[id="delete-poll-id"]').last().attr('value',docs[i]._id);
 									$('canvas').last().attr('id',docs[i]._id);
 									$('.poll-question').last().html(pollQuestion);
 									for (var z=0;z<pollVotes.length;z++){
@@ -242,7 +238,6 @@ module.exports = function (app, passport, jsdom, fs) {
     	var pollVotes = [];
     	Polls.find({_id: parseInt(pollId,10)}, function(err,data){
 	    	if (err) throw err;
-	    	console.log
 	    	pollOwner = data[0].owner;
 	    	pollVotes = data[0].votes;
 	    	while(pollVotes.length > pollOptions.length) pollVotes.pop();
@@ -264,8 +259,30 @@ module.exports = function (app, passport, jsdom, fs) {
   				res.redirect('/profile');
 	        }
 	    });
-	    //res.send('you posted: '+JSON.stringify(req.body));
-    	
+	});
+	app.route(/polldelete/).post(isLoggedIn, function(req, res){
+		var currentUserId = req.session.passport.user;
+		var pollOwner = "";
+    	var pollId = req.body.pollid;
+    	Polls.find({_id: parseInt(pollId,10)}, function(err,data){
+	    	if (err) throw err;
+	    	pollOwner = data[0].owner;
+	    	console.log('poll owner: '+pollOwner);
+	        console.log('"polls" collection: '+JSON.stringify(data));
+	        if (pollOwner == currentUserId) {
+	        	console.log('updating poll id '+pollId);
+	        	Polls.remove({_id: parseInt(pollId,10)}, function(err,data){
+			    	if (err) throw err;
+			        console.log('removed poll id '+pollId+': '+JSON.stringify(data));
+			        req.session.valid = true;
+  					res.redirect('/profile');
+			    });
+	        }else{
+	        	console.log('Error: current user is not poll owner');
+	        	req.session.valid = true;
+  				res.redirect('/profile');
+	        }
+	    });
 	});
 	app.route(/votepost/).post(function(req, res){
 		var returnToReferer = req.headers.referer;
