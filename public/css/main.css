@@ -2,18 +2,18 @@
 .nopadding {padding: 0;}
 body {color:#000000; font-family: 'Play', sans-serif;font-size: 2.2em;overflow-x:hidden;}
 .navbar-brand {font-size: 1em;}
-.cllps-toggler {display:block;text-align:center;color:#ffffff;}
-.cllps-toggler:hover {text-decoration:none;}
+/*.cllps-toggler {display:block;text-align:center;color:#ffffff;}
+.cllps-toggler:hover {text-decoration:none;}*/
 .sect {padding-top: 4vh;}
+.books {padding-top: 4vh;}
+#book_thumbnail_img {max-height: 150px; width: auto !important;}
+.btn-req-book {margin-top: 0.5em;}
 p {margin-top:0.5vh;}
 .credits {display:block;text-align:center;font-size:0.75em;}
 .credits a:hover {text-decoration:none;}
 .output {text-align:center;}
 .output a:hover {text-decoration:none;}
 .profile {margin-top:2vh;}
-.polls {margin-top:2.5vh;}
-.legend {display:block;}
-.chrt-legend {display:inline-block;margin-bottom:0.1em;color:#ffffff;}
 .btn-toolbar {text-align:center;width:auto;max-width:100%;}
 #add-poll {width:100%;}
 /****************************/

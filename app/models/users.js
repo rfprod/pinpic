@@ -12,6 +12,22 @@ var User = new Schema({
 	},
 	nbrClicks: {
 	    clicks: Number 
+	},
+	books: [{
+		name: String,
+		isbn13: String,
+		googleVolumeId: String,
+		thumbnail: String
+	}],
+	offers: {
+		toUser: [{
+			userID: String,
+			bookISBN: String
+		}],
+		fromUser: [{
+			userID: String,
+			bookISBN: String
+		}]
 	}
 });
 

@@ -4,7 +4,8 @@ var path = process.cwd();
 var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 var clickHandler = new ClickHandler();
 
-var Polls = require('../models/polls');
+var Users = require('../models/users');
+var https = require('https');
 
 module.exports = function (app, passport, jsdom, fs) {
 	
@@ -22,13 +23,13 @@ module.exports = function (app, passport, jsdom, fs) {
 	}
 
 	app.route('/').get(function (req, res) {
-		var htmlNavAuthed = "<li class='nav-pills active'><a href='#app'><span class='glyphicon glyphicon-search'></span> All Polls</a></li><li class='nav-pills'><a href='/profile'><span class='glyphicon glyphicon-user'></span> My Polls</a></li><li class='nav-pills'><a href='/logout'><span class='glyphicon glyphicon-remove'></span> Logout</a></li>";
-		var htmlNavNotAuthed = "<li class='nav-pills active'><a href='/'><span class='glyphicon glyphicon-search'></span> All Polls</a></li><li class='nav-pills'><a href='/login'><span class='glyphicon glyphicon-user'></span> Login With Github</a></li>";
+		var htmlNavAuthed = "<li class='nav-pills active'><a href='#app'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/profile'><span class='glyphicon glyphicon-user'></span> My Books</a></li><li class='nav-pills'><a href='/logout'><span class='glyphicon glyphicon-remove'></span> Logout</a></li>";
+		var htmlNavNotAuthed = "<li class='nav-pills active'><a href='/'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/login'><span class='glyphicon glyphicon-user'></span> Login With Github</a></li>";
 		var htmlSourceIndex = null;
-		var pollTemplate = null;
-		fs.readFile(path + "/app/models/poll.html","utf-8", function(err,data){
+		var bookTemplate = null;
+		fs.readFile(path + "/app/models/book.html","utf-8", function(err,data){
 			if (err) throw err;
-			pollTemplate = data;
+			bookTemplate = data;
 			fs.readFile(path + "/public/index.html", "utf-8", function (err,data) {
 				if (err) throw err;
 			  	htmlSourceIndex = data;
@@ -39,60 +40,117 @@ module.exports = function (app, passport, jsdom, fs) {
 						if (err) throw err;
 						var $ = window.$;
 						console.log("index page DOM successfully retrieved");
-						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
+						//$('.books').html("IT'S ALIVE! ALIVE!!!!");
 						if (isLoggedInBool(req, res)) $('.navbar-right').html(htmlNavAuthed);
 						else $('.navbar-right').html(htmlNavNotAuthed);
-						var pollId = "";
-						var pollName = "";
-						var pollQuestion = "";
-						var pollVotes = [];
-						var pollOptions = [];
-						var pollLength = pollVotes.length;
-						console.log('getting polls data from DB');
-						Polls.find({}, function(err, docs) {
-						    if (err) throw err;
-					        if (docs.length == 0) {
-					        	console.log('polls do not exist');
-					        	console.log("index page DOM manipulations complete");
-								var newHtml = serializeDocument(window.document);
-								res.send(newHtml);
-								window.close();
-					        }
-					        else {
-					        	console.log('at least one poll exists');
-					        	var chartInitialization = "<script>$(document).ready(function(){";
-					        	var chartInitializationENDING = "});</script>";
-					        	for (var i=0;i<docs.length;i++){
-					        		pollId = "poll-"+docs[i]._id;
-					        		pollName = docs[i].displayName;
-					        		pollQuestion = docs[i].question;
-									pollVotes = docs[i].votes;
-									pollOptions = docs[i].options;
-									pollLength = pollVotes.length;
-									$('.polls').append(pollTemplate);
-									$('.poll-heading').last().html(pollName);
-									$('.poll-heading').last().attr('href','#'+pollId);
-									$('.poll-internals').last().attr('id',pollId);
-									$('input[id="poll-id"]').last().attr('value',docs[i]._id);
-									$('canvas').last().attr('id',docs[i]._id);
-									$('.poll-question').last().html(pollQuestion);
-									for (var z=0;z<pollVotes.length;z++){
-										$('.options-selector').last().append(htmlUIuniformDropdownOption);
-										$('option').last().val(pollOptions[z]);
-										$('option').last().html(pollOptions[z]);
+						
+						var jsonTotalItems = 0, resBookGoogleId = [], resBookTitle = [], resBookDescription = [], resBookISBN13 = [], resBookThumbnail = [];
+						
+						// get data from google books API
+						var data = '';
+						var url = 'https://www.googleapis.com/books/v1/volumes?q=+intitle&startIndex=0&maxResults=40&key='+process.env.GOOGLE_API_SERVER_KEY;
+						https.get(url, (response) => {
+							response.setEncoding('utf-8');
+							response.on('data', (chunk) => {
+								data += chunk;
+							});
+							response.on('end', () => {
+								console.log('no more data in response');
+								var json = JSON.parse(data);
+								var jsonItems = json.items;
+								console.log(jsonItems);
+								jsonTotalItems = json.totalItems;
+								console.log('jsonTotalItems: '+jsonTotalItems);
+								for (var i=0;i<jsonItems.length-1;i++){
+									if (typeof jsonItems[i].id != 'undefined' &&
+										typeof jsonItems[i].volumeInfo.title != 'undefined' &&
+										typeof jsonItems[i].volumeInfo.description != 'undefined' &&
+										typeof jsonItems[i].volumeInfo.industryIdentifiers != 'undefined' &&
+										typeof jsonItems[i].volumeInfo.imageLinks != 'undefined')
+									{
+										resBookGoogleId.push(jsonItems[i].id);
+										resBookTitle.push(jsonItems[i].volumeInfo.title);
+										resBookDescription.push(jsonItems[i].volumeInfo.description);
+										resBookISBN13.push(jsonItems[i].volumeInfo.industryIdentifiers[0].identifier);
+										resBookThumbnail.push(jsonItems[i].volumeInfo.imageLinks.thumbnail);
 									}
-									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart(4, [1, 4, 6, 8], ['Option #1', 'Option #2', 'Option #3', 'Option #4']);$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
-									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
-									chartInitialization += "$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+docs[i]._id+", "+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});";
-					        	}
-					        	chartInitialization += chartInitializationENDING;
-					        	$('body').append(chartInitialization);
-								console.log("index page DOM manipulations complete");
+								}
+								console.log('resBookGoogleId: '+resBookGoogleId);
+								console.log('resBookTitle: '+resBookTitle);
+								console.log('resBookDescription: '+resBookDescription);
+								console.log('resBookISBN13: '+resBookISBN13);
+								console.log('resBookThumbnail: '+resBookThumbnail);
+								
+								for (var i=0;i<resBookGoogleId.length;i++){
+									$('.books').append(bookTemplate);
+									var mediaContainer = $('.media').last();
+									mediaContainer.find('#book_thumbnail_link').attr('href',resBookThumbnail[i]);
+									mediaContainer.find('#book_thumbnail_img').attr('src',resBookThumbnail[i]);
+									mediaContainer.find('#book_name').html(resBookTitle[i]);
+									mediaContainer.find('#book_isbn13').html(resBookISBN13[i]);
+									mediaContainer.find('#book_googleBookId').html(resBookGoogleId[i]);
+									mediaContainer.find('#book_description').html(resBookDescription[i]);
+								}
 								var newHtml = serializeDocument(window.document);
 								res.send(newHtml);
 								window.close();
-					        }
+								//getDataFromDB();
+							});
+						}).on('error', (e) => {
+							console.log('error: ${e.message}');
 						});
+						
+						function getDataFromDB(){
+							// get users data to see offerings
+							var bookGoogleVolumeID = "";
+							var bookOwner = "";
+							var bookName = "";
+							var bookISBN13 = "";
+							var bookThumbnail = "";
+							var newHtml = null;
+							console.log('getting books data from DB');
+							Users.find({}, function(err, docs) {
+							    if (err) throw err;
+						        if (docs.length == 0) {
+						        	console.log('users do not exist, no offers exist');
+						        	console.log("index page DOM manipulations complete");
+									newHtml = serializeDocument(window.document);
+									res.send(newHtml);
+									window.close();
+						        }
+						        else {
+						        	console.log('at least one user exists, next must check if user offers something');
+						        	for (var i=0;i<docs.length;i++){
+						        		
+						        		bookOwner = docs[i].github.id;
+						        		console.log('book owner: '+bookOwner);
+						        		var userBooks = docs[i].books;
+						        		
+										for (var z=0;z<userBooks.length;z++){
+											console.log(userBooks[i]);
+											/*$('.options-selector').last().append(htmlUIuniformDropdownOption);
+											$('option').last().val(pollOptions[z]);
+											$('option').last().html(pollOptions[z]);*/
+										}
+						        		
+						        		/*pollId = "poll-"+docs[i]._id;
+						        		pollName = docs[i].displayName;
+						        		pollQuestion = docs[i].question;
+										pollVotes = docs[i].votes;
+										pollOptions = docs[i].options;
+										pollLength = pollVotes.length;*/
+										
+										/*
+										$('#book_owner').last().html(bookOwner);
+										*/
+						        	}
+									console.log("index page DOM manipulations complete");
+									newHtml = serializeDocument(window.document);
+									res.send(newHtml);
+									window.close();
+						        }
+							});
+						}
 					}
 				});
 			});
