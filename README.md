@@ -1,6 +1,6 @@
-# Voting Application built on Clementine.js FCC Boilerplate
+# Book Trading Club built on Clementine.js FCC Boilerplate
 
-[Voting Application deployed on c9.io](https://voting-app-rfprod.c9users.io/)
+[Book Trading Club deployed on c9.io](https://book-trading-club-rfprod.c9users.io/)
 
 ## Overview
 
