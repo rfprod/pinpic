@@ -58,7 +58,7 @@ module.exports = function (app, passport, jsdom, fs) {
 								console.log('no more data in response');
 								var json = JSON.parse(data);
 								var jsonItems = json.items;
-								console.log(jsonItems);
+								//console.log(jsonItems);
 								jsonTotalItems = json.totalItems;
 								console.log('jsonTotalItems: '+jsonTotalItems);
 								for (var i=0;i<jsonItems.length-1;i++){
@@ -91,22 +91,15 @@ module.exports = function (app, passport, jsdom, fs) {
 									mediaContainer.find('#book_googleBookId').html(resBookGoogleId[i]);
 									mediaContainer.find('#book_description').html(resBookDescription[i]);
 								}
-								var newHtml = serializeDocument(window.document);
-								res.send(newHtml);
-								window.close();
-								//getDataFromDB();
+								getBookOwnersFromDB();
 							});
 						}).on('error', (e) => {
 							console.log('error: ${e.message}');
 						});
 						
-						function getDataFromDB(){
+						function getBookOwnersFromDB(){
 							// get users data to see offerings
-							var bookGoogleVolumeID = "";
 							var bookOwner = "";
-							var bookName = "";
-							var bookISBN13 = "";
-							var bookThumbnail = "";
 							var newHtml = null;
 							console.log('getting books data from DB');
 							Users.find({}, function(err, docs) {
@@ -119,7 +112,7 @@ module.exports = function (app, passport, jsdom, fs) {
 									window.close();
 						        }
 						        else {
-						        	console.log('at least one user exists, next must check if user offers something');
+						        	console.log('at least one user exists, checking if user has books to offer');
 						        	for (var i=0;i<docs.length;i++){
 						        		
 						        		bookOwner = docs[i].github.id;
@@ -162,19 +155,12 @@ module.exports = function (app, passport, jsdom, fs) {
 		res.redirect('/login');
 	});
 	app.route('/profile').get(isLoggedIn, function (req, res) {
-		var pollOwnerIdFilter = req.session.passport.user;
-		//console.log("pollOwnerIdFilter: "+pollOwnerIdFilter);
-		Polls.find({}, function(err, docs) {
-		    if (err) throw err;
-	        console.log('list docs: '+JSON.stringify(docs));
-	        if (docs.length == 0) console.log('polls do not exist');
-	        else console.log('polls exist');
-		});
+		var bookOwnerIdFilter = req.session.passport.user;
 		var htmlSourceProfile = null;
-		var pollTemplate = null;
-		fs.readFile(path + "/app/models/poll-editable.html","utf-8", function(err,data){
+		var bookTemplate = null;
+		fs.readFile(path + "/app/models/book-editable.html","utf-8", function(err,data){
 			if (err) throw err;
-			pollTemplate = data;
+			bookTemplate = data;
 			fs.readFile(path + "/public/profile.html", "utf-8", function (err,data) {
 				if (err) throw err;
 			  	htmlSourceProfile = data;
@@ -186,86 +172,48 @@ module.exports = function (app, passport, jsdom, fs) {
 						var $ = window.$;
 						console.log("profile page DOM successfully retrieved");
 						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
-						var pollId = "";
-						var pollName = "";
-						var pollQuestion = "";
-						var pollVotes = [];
-						var pollOptions = [];
-						var pollLength = pollVotes.length;
-						var totalVotesCount = 0;
-						console.log('getting polls data from DB');
-						Polls.find({owner: pollOwnerIdFilter}, function(err, docs) {
+						console.log('getting books data from DB');
+						Users.find({_id: bookOwnerIdFilter}, function(err, docs) {
 						    if (err) throw err;
-						    var chartInitialization = "<script>$(document).ready(function(){";
-				        	var collapseAddPollAndSetOwner = "$('#collapseOne').bind('shown.bs.collapse', function (e){$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});$('#owner').val('"+pollOwnerIdFilter+"');});";
-				        	chartInitialization += collapseAddPollAndSetOwner;
-				        	var chartInitializationENDING = "});</script>";
 						    var newHtml = null;
-					        if (docs.length == 0) {
-					        	console.log('polls do not exist');
-					        	chartInitialization += chartInitializationENDING;
-					        	$('.polls').append('You have no polls created yet.');
-					        	$('body').append(chartInitialization);
-					        	console.log("index page DOM manipulations complete");
-								newHtml = serializeDocument(window.document);
-								res.send(newHtml);
-								window.close();
+						    console.log(docs);
+						    var userBooks = docs[0].books;
+						    var userInOffers = docs[0].offers.toUser;
+						    var userOutOffers = docs[0].offers.fromUser;
+						    $('#profile-books').html(userBooks.length);
+				        	$('#profile-in-offers').html(userInOffers.length);
+				        	$('#profile-out-offers').html(userOutOffers.length);
+					        if (userBooks.length == 0) {
+					        	console.log('books do not exist');
+					        	$('.books').append('You do not own any books yet.');
 					        }else{
-					        	console.log('at least one poll exists');
-					        	$('#profile-polls').html(docs.length);
-					        	var tweetLink = "";
-					        	for (var i=0;i<docs.length;i++){
-					        		pollId = "poll-"+docs[i]._id;
-					        		pollName = docs[i].displayName;
-					        		pollQuestion = docs[i].question;
-									pollVotes = docs[i].votes;
-									pollOptions = docs[i].options;
-									pollLength = pollVotes.length;
-									tweetLink = "https://twitter.com/intent/tweet?text="+pollName+"&url=https://voting-app-rfprod.c9users.io/%23"+pollId;
-									$('.polls').append(pollTemplate);
-									$('.poll-heading').last().html(pollName);
-									$('.poll-heading').last().attr('href','#'+pollId);
-									$('.poll-internals').last().attr('id',pollId);
-									$(".tweet-it").last().attr("href",tweetLink);
-									$('input[id="poll-id"]').last().attr('value',docs[i]._id);
-									$('input[id="edit-poll-id"]').last().attr('value',docs[i]._id);
-									$('input[id="delete-poll-id"]').last().attr('value',docs[i]._id);
-									$('canvas').last().attr('id',docs[i]._id);
-									$('.poll-question').last().html(pollQuestion);
-									for (var z=0;z<pollVotes.length;z++){
-										$('.options-selector').last().append(htmlUIuniformDropdownOption);
-										$('option').last().val(pollOptions[z]);
-										$('option').last().html(pollOptions[z]);
-										totalVotesCount += pollVotes[z];
-									}
-									$('input[id="edit-name"]').last().attr('value',pollName);
-									$('input[id="edit-question"]').last().attr('value',pollQuestion);
-									$('input[id="edit-options"]').last().attr('value',pollOptions);
-									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart(4, [1, 4, 6, 8], ['Option #1', 'Option #2', 'Option #3', 'Option #4']);$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
-									//var chartInitialization = "<script>$(document).ready(function(){$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});});</script>";
-									chartInitialization += "$('#"+pollId+"').bind('shown.bs.collapse', function (e) {drawDoughbutChart("+docs[i]._id+", "+pollLength+", "+JSON.stringify(pollVotes)+", "+JSON.stringify(pollOptions)+");$('html, body').animate({scrollTop: $(this).parent().offset().top-$('nav').height()});});";
-					        	}
-					        	$('#profile-votes').html(totalVotesCount);
-					        	chartInitialization += chartInitializationENDING;
-					        	$('body').append(chartInitialization);
-								console.log("index page DOM manipulations complete");
-								newHtml = serializeDocument(window.document);
-								res.send(newHtml);
-								window.close();
+					        	console.log('at least one book exists');
+					        	for (var i=0;i<userBooks.length;i++){
+									$('.books').append(bookTemplate);
+									var mediaContainer = $('.media').last();
+									mediaContainer.find('#book_thumbnail_link').attr('href',userBooks[i].thumbnail);
+									mediaContainer.find('#book_thumbnail_img').attr('src',userBooks[i].thumbnail);
+									mediaContainer.find('#book_name').html(userBooks[i].name);
+									mediaContainer.find('#book_isbn13').html(userBooks[i].isbn13);
+									mediaContainer.find('#book_googleBookId').html(userBooks[i].googleVolumeId);
+									mediaContainer.find('#book_timestamp').html(userBooks[i].timestamp);
+								}
+								//$('input[id="edit-name"]').last().attr('value',pollName);
 					        }
+					        console.log("index page DOM manipulations complete");
+							newHtml = serializeDocument(window.document);
+							res.send(newHtml);
+							window.close();
 						});
 					}
 				});
 			});
 		});
 	});
-	app.route(/pollpost/).post(isLoggedIn, function(req, res){
-		var pollOwner = req.body.owner;
-    	var pollName = req.body.name;
-    	var pollQuestion = req.body.question;
-    	var pollOptions = req.body.options.replace(/ , /g,',').replace(/ ,/g,',').replace(/, /g,',').split(',');
-    	var pollVotes = [];
-    	for (var i=0;i<pollOptions.length;i++) pollVotes.push(0);
+	app.route(/addbook/).post(isLoggedIn, function(req, res){
+		var bookOwner = req.session.passport.user;
+    	var bookName = req.body.bookname;
+    	console.log('bookName: '+bookName);
 		var dateLog = "";
 			var date = new Date();
 			var year = date.getFullYear();
@@ -276,61 +224,83 @@ module.exports = function (app, passport, jsdom, fs) {
 			var minutes = date.getMinutes();
 			if (minutes <10) minutes = "0"+minutes;
 			dateLog = year+"-"+month+"-"+day+" "+hours+":"+minutes;
-    	var id = null;
     	//console.log('POST params: '+pollOwner+" | "+pollName+" | "+pollQuestion+" | "+JSON.stringify(pollOptions)+" | "+JSON.stringify(pollVotes)+" | "+dateLog);
-    	Polls.find({}, function(err,data){
+    	Users.find({_id: bookOwner}, function(err,data){
 	    	if (err) throw err;
-	        console.log('"polls" collection: '+JSON.stringify(data));
-	        id = data.length + 1;
-	        console.log('next id: '+id);
-		    var newPoll = new Polls();
-			newPoll._id = id;
-			newPoll.owner = pollOwner;
-			newPoll.displayName = pollName;
-			newPoll.question = pollQuestion;
-			newPoll.options = pollOptions;
-			newPoll.votes = pollVotes;
-			newPoll.timestamp = dateLog;
-			newPoll.save(function (err) {
-				if (err) throw err;
-				console.log('new data saved');
-			});
-			console.log(newPoll);
-	    });
-    	req.session.valid = true;
-  		res.redirect('/profile');
-	});
-	app.route(/pollupdate/).post(isLoggedIn, function(req, res){
-		var currentUserId = req.session.passport.user;
-		var pollOwner = "";
-    	var pollId = req.body.pollid;
-    	var pollName = req.body.editname;
-    	var pollQuestion = req.body.editquestion;
-    	var pollOptions = req.body.editoptions.replace(/ , /g,',').replace(/ ,/g,',').replace(/, /g,',').split(',');
-    	var pollVotes = [];
-    	Polls.find({_id: parseInt(pollId,10)}, function(err,data){
-	    	if (err) throw err;
-	    	pollOwner = data[0].owner;
-	    	pollVotes = data[0].votes;
-	    	while(pollVotes.length > pollOptions.length) pollVotes.pop();
-	    	while(pollVotes.length < pollOptions.length) pollVotes.push(0);
-	    	console.log('new options: '+JSON.stringify(pollOptions)+' | '+'new votes: '+JSON.stringify(pollVotes));
-	    	console.log('poll owner: '+pollOwner);
-	        console.log('"polls" collection: '+JSON.stringify(data));
-	        if (pollOwner == currentUserId) {
-	        	console.log('updating poll id '+pollId);
-	        	Polls.update({_id: parseInt(pollId,10)}, {$set:{displayName:pollName, question:pollQuestion, options:pollOptions, votes:pollVotes}}, function(err,data){
-			    	if (err) throw err;
-			        console.log('updated poll id '+pollId+': '+JSON.stringify(data));
-			        req.session.valid = true;
-  					res.redirect('/profile');
-			    });
-	        }else{
-	        	console.log('Error: current user is not poll owner');
-	        	req.session.valid = true;
-  				res.redirect('/profile');
+	        console.log(data);
+	        var userBooks = [];
+	        for (var i=0;i<data[0].books.length;i++){
+	        	userBooks.push(data[0].books[i]);
 	        }
+	        console.log('userBooks : '+userBooks);
+	        
+	        var jsonTotalItems = 0, resBookGoogleId = [], resBookTitle = [], resBookDescription = [], resBookISBN13 = [], resBookThumbnail = [];
+	        // get data from google books API
+			var data = '';
+			var url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:'+bookName+'&startIndex=0&maxResults=40&key='+process.env.GOOGLE_API_SERVER_KEY;
+			https.get(url, (response) => {
+				response.setEncoding('utf-8');
+				response.on('data', (chunk) => {
+					data += chunk;
+				});
+				response.on('end', () => {
+					console.log('no more data in response');
+					var json = JSON.parse(data);
+					var jsonItems = json.items;
+					//console.log(jsonItems);
+					jsonTotalItems = json.totalItems;
+					console.log('jsonTotalItems: '+jsonTotalItems);
+					for (var i=0;i<jsonItems.length-1;i++){
+						if (typeof jsonItems[i].id != 'undefined' &&
+							typeof jsonItems[i].volumeInfo.title != 'undefined' &&
+							typeof jsonItems[i].volumeInfo.description != 'undefined' &&
+							typeof jsonItems[i].volumeInfo.industryIdentifiers != 'undefined' &&
+							typeof jsonItems[i].volumeInfo.imageLinks != 'undefined')
+						{
+							resBookGoogleId.push(jsonItems[i].id);
+							resBookTitle.push(jsonItems[i].volumeInfo.title);
+							resBookDescription.push(jsonItems[i].volumeInfo.description);
+							resBookISBN13.push(jsonItems[i].volumeInfo.industryIdentifiers[0].identifier);
+							resBookThumbnail.push(jsonItems[i].volumeInfo.imageLinks.thumbnail);
+						}
+					}
+					//console.log('resBookGoogleId: '+resBookGoogleId);
+					//console.log('resBookTitle: '+resBookTitle);
+					//console.log('resBookDescription: '+resBookDescription);
+					//console.log('resBookISBN13: '+resBookISBN13);
+					//console.log('resBookThumbnail: '+resBookThumbnail);
+					
+					// add random book from parsed server response
+					var randomBookId = Math.floor(Math.random()*((resBookGoogleId.length-1)-0+1) + 0);
+					//console.log('randomBookId: '+randomBookId);
+					//console.log('resBookGoogleId '+randomBookId+': '+resBookGoogleId[randomBookId]);
+					//console.log('resBookTitle '+randomBookId+': '+resBookTitle[randomBookId]);
+					//console.log('resBookISBN13 '+randomBookId+': '+resBookISBN13[randomBookId]);
+					//console.log('resBookThumbnail '+randomBookId+': '+resBookThumbnail[randomBookId]);
+					
+					userBooks.push({
+						name: resBookTitle[randomBookId],
+						isbn13: resBookISBN13[randomBookId],
+						googleVolumeId: resBookGoogleId[randomBookId],
+						thumbnail: resBookThumbnail[randomBookId],
+						timestamp: dateLog
+					});
+					console.log('userBooks updated');
+					console.log(userBooks);
+					Users.update({_id:bookOwner}, {$set:{books:userBooks}}, function(err,data){
+				    	if (err) throw err;
+				        console.log('updated user');
+				        console.log(data);
+				        req.session.valid = true;
+	  					res.redirect('/profile');
+				    });
+				});
+			}).on('error', (e) => {
+				console.log('error: ${e.message}');
+			});
 	    });
+    	//req.session.valid = true;
+  		//res.redirect('/profile');
 	});
 	app.route(/polldelete/).post(isLoggedIn, function(req, res){
 		var currentUserId = req.session.passport.user;
@@ -382,7 +352,7 @@ module.exports = function (app, passport, jsdom, fs) {
 	});
 	app.route('/auth/github').get(passport.authenticate('github'));
 	app.route('/auth/github/callback').get(passport.authenticate('github', {
-		successRedirect: '/',
+		successRedirect: '/profile',
 		failureRedirect: '/login'
 	}));
 	

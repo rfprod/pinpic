@@ -7,6 +7,7 @@ body {color:#000000; font-family: 'Play', sans-serif;font-size: 2.2em;overflow-x
 .sect {padding-top: 4vh;}
 .books {padding-top: 4vh;}
 #book_thumbnail_img {max-height: 150px; width: auto !important;}
+#book_description {font-size: 0.75em;}
 .btn-req-book {margin-top: 0.5em;}
 p {margin-top:0.5vh;}
 .credits {display:block;text-align:center;font-size:0.75em;}

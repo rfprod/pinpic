@@ -10,6 +10,13 @@ var User = new Schema({
 		username: String,
         publicRepos: Number
 	},
+	userExtended: {
+		optId: String,
+		optEmail: String,
+		optFullName: String,
+		optCity: String,
+		optState: String
+	},
 	nbrClicks: {
 	    clicks: Number 
 	},
@@ -17,16 +24,21 @@ var User = new Schema({
 		name: String,
 		isbn13: String,
 		googleVolumeId: String,
-		thumbnail: String
+		thumbnail: String,
+		timestamp: String
 	}],
 	offers: {
 		toUser: [{
 			userID: String,
-			bookISBN: String
+			bookISBN: String,
+			timestamp: String,
+			complete: Boolean
 		}],
 		fromUser: [{
 			userID: String,
-			bookISBN: String
+			bookISBN: String,
+			timestamp: String,
+			complete: Boolean
 		}]
 	}
 });

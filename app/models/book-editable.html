@@ -1,4 +1,4 @@
-<div class="media">
+<div class="media col-xs-12 col-sm-12 col-md-6 col-lg-6">
 	<div class="media-left">
 		<a id="book_thumbnail_link" href="http://books.google.com/books/content?id=gfUaBAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&imgtk=AFLRE72IrmS1xina5piLzrEFMn1lz7Mmqe3mCcFIKCbyVupmv-08Y80fYYrLyHlno7TvobHzCdrTGcfiQaSWVtkyhTB7T1q0V_v6JGbVGTDHA9qE5JuZnkQaY9hJRxkhiVddmto9LzGL&source=gbs_api" target=_blank>
 			<img id="book_thumbnail_img" data-holder-rendered="true" src="http://books.google.com/books/content?id=gfUaBAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&imgtk=AFLRE72IrmS1xina5piLzrEFMn1lz7Mmqe3mCcFIKCbyVupmv-08Y80fYYrLyHlno7TvobHzCdrTGcfiQaSWVtkyhTB7T1q0V_v6JGbVGTDHA9qE5JuZnkQaY9hJRxkhiVddmto9LzGL&source=gbs_api" class="media-object"/>
@@ -6,13 +6,24 @@
 	</div>
     <div class="media-body">
 	    <h4 class="media-heading" id="book_name">Book Title</h4>
-	    <p id="book_extended">Owner: <span id="book_owner">n/a</span> | ISBN13: <span id="book_isbn13">n/a</span> | Google Book Id: <span id="book_googleBookId">n/a</span></p>
-	    <p id="book_description">Book description</p>
+	    <p id="book_extended">ISBN13: <span id="book_isbn13">n/a</span></p>
+	    <p id="book_extended">Google Book Id: <span id="book_googleBookId">n/a</span></p>
+	    <p id="book_extended">Added: <span id="book_timestamp">n/a</span></p>
     </div>
     <div class="btn-group btn-req-book btn-group-justified" role="group">
+    	<div class="btn-group" role="group">
+		    <a id="accept-offer" class="btn btn-default btn-success btn-request-book" href="/acceptoffer">
+                <span class="glyphicon glyphicon-ok"></span> Accept offer
+            </a>
+	    </div>
 	    <div class="btn-group" role="group">
-		    <a id="req-book" class="btn btn-default btn-info btn-request-book" href="/requestbook">
-                <span class="glyphicon glyphicon-shopping-cart"></span> Request the book
+		    <a id="reject-offer" class="btn btn-default btn-warning btn-request-book" href="/rejectoffer">
+                <span class="glyphicon glyphicon-remove"></span> Reject offer
+            </a>
+	    </div>
+	    <div class="btn-group" role="group">
+		    <a id="req-book" class="btn btn-default btn-danger btn-request-book" href="/requestbook">
+                <span class="glyphicon glyphicon-trash"></span> Remove book
             </a>
 	    </div>
     </div>
