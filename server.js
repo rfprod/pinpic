@@ -9,6 +9,7 @@ var bodyParser = require('body-parser');
 var jsdom = require("jsdom");
 var fs = require('fs');
 var app = express();
+var expressWs = require('express-ws')(app); //app = express app
 
 require('dotenv').load();
 require('./app/config/passport')(passport);

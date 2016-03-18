@@ -6,11 +6,19 @@
 	</div>
     <div class="media-body">
 	    <h4 class="media-heading" id="book_name">Book Title</h4>
-	    <p id="book_extended">ISBN13: <span id="book_isbn13">n/a</span></p>
-	    <p id="book_extended">Google Book Id: <span id="book_googleBookId">n/a</span></p>
-	    <p id="book_extended">Added: <span id="book_timestamp">n/a</span></p>
+	    <p id="book_extended">
+	    	ISBN13: <span id="book_isbn13">n/a</span> |
+	    	Google Book Id: <span id="book_googleBookId">n/a</span> |
+	    	Added: <span id="book_timestamp">n/a</span>
+	    </p>
+	    <div id="offer-details">
+	    	<div id="user_instructions">Do not accept more offers than the book copies in your possession.</div>
+	    	<!--<div class="checkbox">
+			  <label><input type="checkbox" value="">< username > is interested in buying this book for < amount > $</label>
+			</div>-->
+	    </div>
     </div>
-    <div class="btn-group btn-req-book btn-group-justified" role="group">
+    <div class="btn-group btn-control-book btn-group-justified" role="group">
     	<div class="btn-group" role="group">
 		    <a id="accept-offer" class="btn btn-default btn-success btn-request-book" href="/acceptoffer">
                 <span class="glyphicon glyphicon-ok"></span> Accept offer
@@ -22,9 +30,9 @@
             </a>
 	    </div>
 	    <div class="btn-group" role="group">
-		    <a id="req-book" class="btn btn-default btn-danger btn-request-book" href="/requestbook">
+		    <button id="remove-book" class="btn btn-default btn-danger btn-request-book" onclick="removeBook(this);">
                 <span class="glyphicon glyphicon-trash"></span> Remove book
-            </a>
+            </button>
 	    </div>
     </div>
     <hr>

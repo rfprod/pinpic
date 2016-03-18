@@ -176,7 +176,7 @@ module.exports = function (app, passport, jsdom, fs) {
 						Users.find({_id: bookOwnerIdFilter}, function(err, docs) {
 						    if (err) throw err;
 						    var newHtml = null;
-						    console.log(docs);
+						    //console.log(docs);
 						    var userBooks = docs[0].books;
 						    var userInOffers = docs[0].offers.toUser;
 						    var userOutOffers = docs[0].offers.fromUser;
@@ -191,14 +191,24 @@ module.exports = function (app, passport, jsdom, fs) {
 					        	for (var i=0;i<userBooks.length;i++){
 									$('.books').append(bookTemplate);
 									var mediaContainer = $('.media').last();
+									mediaContainer.attr('id',userBooks[i].isbn13);
 									mediaContainer.find('#book_thumbnail_link').attr('href',userBooks[i].thumbnail);
 									mediaContainer.find('#book_thumbnail_img').attr('src',userBooks[i].thumbnail);
 									mediaContainer.find('#book_name').html(userBooks[i].name);
 									mediaContainer.find('#book_isbn13').html(userBooks[i].isbn13);
 									mediaContainer.find('#book_googleBookId').html(userBooks[i].googleVolumeId);
 									mediaContainer.find('#book_timestamp').html(userBooks[i].timestamp);
+									if (userInOffers.length == 0){
+										mediaContainer.find('#accept-offer').addClass('disabled');
+										mediaContainer.find('#reject-offer').addClass('disabled');
+									}
+									for (var i=0;i<userInOffers.length;i++){
+							        	if (userInOffers[i].completed == 'false' && userInOffers[i].isbn13 == userBooks[i].isbn13){
+							        		var offerUnitHTML = "<div class='checkbox'><label><input type='checkbox' value=''>User id"+userInOffers[i].userID+" is interested in buying this book for "+userInOffers[i].amountOffered+".</label></div>";
+							        		mediaContainer.find('#offer-details').append(offerUnitHTML);
+							        	}
+							        }
 								}
-								//$('input[id="edit-name"]').last().attr('value',pollName);
 					        }
 					        console.log("index page DOM manipulations complete");
 							newHtml = serializeDocument(window.document);
@@ -212,6 +222,7 @@ module.exports = function (app, passport, jsdom, fs) {
 	});
 	app.route(/addbook/).post(isLoggedIn, function(req, res){
 		var bookOwner = req.session.passport.user;
+		console.log(bookOwner);
     	var bookName = req.body.bookname;
     	console.log('bookName: '+bookName);
 		var dateLog = "";
@@ -224,28 +235,26 @@ module.exports = function (app, passport, jsdom, fs) {
 			var minutes = date.getMinutes();
 			if (minutes <10) minutes = "0"+minutes;
 			dateLog = year+"-"+month+"-"+day+" "+hours+":"+minutes;
-    	//console.log('POST params: '+pollOwner+" | "+pollName+" | "+pollQuestion+" | "+JSON.stringify(pollOptions)+" | "+JSON.stringify(pollVotes)+" | "+dateLog);
     	Users.find({_id: bookOwner}, function(err,data){
 	    	if (err) throw err;
-	        console.log(data);
+	        //console.log(data);
 	        var userBooks = [];
 	        for (var i=0;i<data[0].books.length;i++){
 	        	userBooks.push(data[0].books[i]);
 	        }
-	        console.log('userBooks : '+userBooks);
-	        
+	        //console.log('userBooks : '+userBooks);
 	        var jsonTotalItems = 0, resBookGoogleId = [], resBookTitle = [], resBookDescription = [], resBookISBN13 = [], resBookThumbnail = [];
 	        // get data from google books API
-			var data = '';
+			var apiData = '';
 			var url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:'+bookName+'&startIndex=0&maxResults=40&key='+process.env.GOOGLE_API_SERVER_KEY;
 			https.get(url, (response) => {
 				response.setEncoding('utf-8');
 				response.on('data', (chunk) => {
-					data += chunk;
+					apiData += chunk;
 				});
 				response.on('end', () => {
 					console.log('no more data in response');
-					var json = JSON.parse(data);
+					var json = JSON.parse(apiData);
 					var jsonItems = json.items;
 					//console.log(jsonItems);
 					jsonTotalItems = json.totalItems;
@@ -264,20 +273,8 @@ module.exports = function (app, passport, jsdom, fs) {
 							resBookThumbnail.push(jsonItems[i].volumeInfo.imageLinks.thumbnail);
 						}
 					}
-					//console.log('resBookGoogleId: '+resBookGoogleId);
-					//console.log('resBookTitle: '+resBookTitle);
-					//console.log('resBookDescription: '+resBookDescription);
-					//console.log('resBookISBN13: '+resBookISBN13);
-					//console.log('resBookThumbnail: '+resBookThumbnail);
-					
 					// add random book from parsed server response
 					var randomBookId = Math.floor(Math.random()*((resBookGoogleId.length-1)-0+1) + 0);
-					//console.log('randomBookId: '+randomBookId);
-					//console.log('resBookGoogleId '+randomBookId+': '+resBookGoogleId[randomBookId]);
-					//console.log('resBookTitle '+randomBookId+': '+resBookTitle[randomBookId]);
-					//console.log('resBookISBN13 '+randomBookId+': '+resBookISBN13[randomBookId]);
-					//console.log('resBookThumbnail '+randomBookId+': '+resBookThumbnail[randomBookId]);
-					
 					userBooks.push({
 						name: resBookTitle[randomBookId],
 						isbn13: resBookISBN13[randomBookId],
@@ -287,10 +284,9 @@ module.exports = function (app, passport, jsdom, fs) {
 					});
 					console.log('userBooks updated');
 					console.log(userBooks);
-					Users.update({_id:bookOwner}, {$set:{books:userBooks}}, function(err,data){
+					Users.update({_id:bookOwner}, {$set:{books:userBooks}}, function(err,dt){
 				    	if (err) throw err;
-				        console.log('updated user');
-				        console.log(data);
+				        console.log('updated user: '+JSON.stringify(dt));
 				        req.session.valid = true;
 	  					res.redirect('/profile');
 				    });
@@ -299,54 +295,36 @@ module.exports = function (app, passport, jsdom, fs) {
 				console.log('error: ${e.message}');
 			});
 	    });
-    	//req.session.valid = true;
-  		//res.redirect('/profile');
 	});
-	app.route(/polldelete/).post(isLoggedIn, function(req, res){
-		var currentUserId = req.session.passport.user;
-		var pollOwner = "";
-    	var pollId = req.body.pollid;
-    	Polls.find({_id: parseInt(pollId,10)}, function(err,data){
-	    	if (err) throw err;
-	    	pollOwner = data[0].owner;
-	    	console.log('poll owner: '+pollOwner);
-	        console.log('"polls" collection: '+JSON.stringify(data));
-	        if (pollOwner == currentUserId) {
-	        	console.log('updating poll id '+pollId);
-	        	Polls.remove({_id: parseInt(pollId,10)}, function(err,data){
+	app.ws('/removebook', function(ws, res){
+		console.log('/removebook');
+		ws.on('message', function(msg){
+			console.log('remove book: '+msg);
+			var wssMsg = msg.split('|');
+			console.log('wssMsg: '+JSON.stringify(wssMsg));
+			Users.find({'github.id': wssMsg[0]}, function(err, docs) {
+		    	if (err) throw err;
+		    	var userBooks = docs[0].books;
+		    	var updatedBooks = [];
+		    	for (var i=0;i<userBooks.length;i++){
+		    		if (userBooks[i].isbn13 != wssMsg[1]) updatedBooks.push(userBooks[i]);
+		    	}
+		    	Users.update({'github.id': wssMsg[0]}, {$set:{books:updatedBooks}}, function(err,dt){
 			    	if (err) throw err;
-			        console.log('removed poll id '+pollId+': '+JSON.stringify(data));
-			        req.session.valid = true;
-  					res.redirect('/profile');
+			        console.log('updated user: '+JSON.stringify(dt));
+			        ws.send('book removed, updated books for the owner: '+JSON.stringify(updatedBooks),function(error) {
+				    	if (error) throw error;
+					});
 			    });
-	        }else{
-	        	console.log('Error: current user is not poll owner');
-	        	req.session.valid = true;
-  				res.redirect('/profile');
-	        }
+	        });
+		});
+		ws.on('close', function() {
+	        console.log('Remove book: Client disconnected.');
+	    });
+	    ws.on('error', function() {
+	        console.log('Remove book: ERROR');
 	    });
 	});
-	app.route(/votepost/).post(function(req, res){
-		var returnToReferer = req.headers.referer;
-		returnToReferer = returnToReferer.substr(returnToReferer.indexOf(".io")+3,returnToReferer.length);
-    	var pollId = req.body.pollid;
-    	var pollVote = req.body.vote;
-    	Polls.find({_id: parseInt(pollId,10)}, function(err,data){
-	    	if (err) throw err;
-	    	var addVoteIndex = data[0].options.indexOf(pollVote);
-	    	var updatedVotes = data[0].votes;
-	    	updatedVotes[addVoteIndex]++;
-	    	console.log('updatedVotes: '+JSON.stringify(updatedVotes));
-	    	console.log("addVoteIndex: "+addVoteIndex);
-	    	Polls.update({_id: parseInt(pollId,10)}, {$set: {votes: updatedVotes}},function(err,data){
-	    		if(err) throw err;
-	    		console.log(data);
-	    	});
-	        console.log('poll id '+pollId+': '+JSON.stringify(data));
-	    });
-    	req.session.valid = true;
-  		res.redirect(returnToReferer);
-	}); 
 	app.route('/api/:id').get(isLoggedIn, function (req, res) {
 		res.json(req.user.github);
 	});
