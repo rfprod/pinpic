@@ -23,7 +23,7 @@
 		      <div class="container-fluid"> 
 		        <ul class="nav navbar-nav navbar-right">
 		        	<li class="nav-pills"><a href="/"><span class="glyphicon glyphicon-search"></span> All Books</a></li>
-		        	<li class="nav-pills active"><a href="#app"><span class="glyphicon glyphicon-user"></span> Login With Github</a></li>
+		        	<li class="nav-pills active"><a href="#app"><span class="glyphicon glyphicon-user"></span> Login with Github</a></li>
 		        </ul>
 		      </div>
 		    </div>
@@ -42,6 +42,49 @@
 								<p>LOGIN WITH GITHUB</p>
 							</div>
 						</a>
+						<div id="email-auth">
+							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+								<div class="row">
+									<form role="form" action="/emailsignup/" id="email-signupper" class="form-vertical" method="POST" enctype="application/x-www-form-urlencoded">
+					                	<fieldset>
+					    					<legend>Sign Up with Email</legend>
+											<div class="form-group">
+						                    	<input type="text" class="form-control" placeholder="Email" name="email-signup" value="" id="email-signup">
+						                    </div>
+						                    <div class="form-group">
+						                    	<input type="text" class="form-control" placeholder="Password" name="password-signup" value="" id="password-signup">
+						                    </div>
+						                    <div class="form-group">
+						                    	<input type="text" class="form-control" placeholder="Repeat password" name="password-repeat-signup" value="" id="password-repeat-signup">
+						                    </div>
+										 	<div class="btn-group btn-group-justified" role="group">
+												<div class="btn-group" role="group">
+													<button id="submit-btn" type="submit" class="btn btn-default btn-success btn-email-signup"><span class="glyphicon glyphicon-edit"></span> Sign Up</button>
+												</div>
+											</div>
+										</fieldset>
+									</form>
+								</div>
+							</div>
+							<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+								<form role="form" action="/emaillogin/" id="email-loginer" class="form-vertical" method="POST" enctype="application/x-www-form-urlencoded">
+				                	<fieldset>
+				    					<legend>Login with Email</legend>
+										<div class="form-group">
+					                    	<input type="text" class="form-control" placeholder="Email" name="email-login" value="" id="email-login">
+					                    </div>
+					                    <div class="form-group">
+					                    	<input type="text" class="form-control" placeholder="Password" name="password-login" value="" id="password-login">
+					                    </div>
+									 	<div class="btn-group btn-group-justified" role="group">
+											<div class="btn-group" role="group">
+												<button id="submit-btn" type="submit" class="btn btn-default btn-success btn-email-login"><span class="glyphicon glyphicon-log-in"></span> Log In</button>
+											</div>
+										</div>
+									</fieldset>
+								</form>
+							</div>
+						</div>
 					</div>
 		        </p>
 		      </div>

@@ -22,8 +22,8 @@ p {margin-top:0.5vh;}
 #user_instructions {color: #ff0000;}
 .checkbox {text-align: left;}
 .btn-toolbar {text-align:center;width:auto;max-width:100%;}
-#add-poll {width:100%;}
 .btn-edit-user-extended {width:100%;}
+#email-auth {margin-top:2vh;}
 /****************************/
 /* Clementine default style */
 /********** Fonts ***********/
