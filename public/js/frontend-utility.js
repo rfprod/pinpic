@@ -14,12 +14,11 @@ function removeBook(obj){
 	var mediaContainer = $('#'+obj.id).parent().parent().parent();
 	console.log(mediaContainer.attr('id'));
 	var bookISBN13 = mediaContainer.find('#book_isbn13').html();
-	var bookOwnerId = $('#profile-id').html();
-	console.log('data removal invoked, owner id: '+bookOwnerId+', book\'s isbn13: '+bookISBN13);
+	console.log('book removal invoked, isbn13: '+bookISBN13);
 	var connRemove = new WebSocket("wss://book-trading-club-rfprod.c9users.io/removebook");
     connRemove.onopen = function(){
 	    console.log("Removing book. Connection opened");
-	    connRemove.send(bookOwnerId+'|'+bookISBN13);
+	    connRemove.send(bookISBN13);
     }
     connRemove.onmessage = function(evt){
 	    console.info("Received "+JSON.stringify(evt.data));

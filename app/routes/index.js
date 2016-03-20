@@ -22,6 +22,7 @@ module.exports = function (app, passport, jsdom, fs) {
 	}
 
 	app.route('/').get(function (req, res) {
+		console.log('/');
 		var htmlNavAuthed = "<li class='nav-pills active'><a href='#app'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/profile'><span class='glyphicon glyphicon-user'></span> My Books</a></li><li class='nav-pills'><a href='/logout'><span class='glyphicon glyphicon-remove'></span> Logout</a></li>";
 		var htmlNavNotAuthed = "<li class='nav-pills active'><a href='/'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/login'><span class='glyphicon glyphicon-user'></span> Login With Github</a></li>";
 		var htmlSourceIndex = null;
@@ -113,17 +114,18 @@ module.exports = function (app, passport, jsdom, fs) {
 						        	console.log('at least one user exists, checking if user has books to offer');
 						        	var booksDOMobjChildren = $('.books').children();
 						        	console.log(booksDOMobjChildren);
+						        	console.log(docs);
 						        	for (var i=0;i<docs.length;i++){
-						        		bookOwner = docs[i].github.id;
-						        		console.log('book owner: '+bookOwner);
+						        		bookOwner = docs[i]._id.toString();
+						        		//console.log('book owner: '+bookOwner);
 						        		var userBooks = docs[i].books;
 										for (var z=0;z<userBooks.length;z++){
-											console.log(userBooks[z]);
+											//console.log(userBooks[z]);
 											var bookISBN13index = resBookISBN13.indexOf(userBooks[z].isbn13);
-											console.log(bookISBN13index);
+											//console.log(bookISBN13index);
 											if (bookISBN13index != -1) {
 												var selectBook = booksDOMobjChildren.eq(bookISBN13index);
-												console.log(selectBook);
+												//console.log(selectBook);
 												var bookOwnerDOM = selectBook.find('#book_owner');
 												bookOwnerDOM.html(bookOwner);
 												var reqBookDOM = selectBook.find('#req-book');
@@ -152,6 +154,7 @@ module.exports = function (app, passport, jsdom, fs) {
 		res.redirect('/login');
 	});
 	app.route('/profile').get(isLoggedIn, function (req, res) {
+		console.log('/profile');
 		var bookOwnerIdFilter = req.session.passport.user;
 		var htmlSourceProfile = null;
 		var bookTemplate = null;
@@ -326,18 +329,17 @@ module.exports = function (app, passport, jsdom, fs) {
 	});
 	app.ws('/removebook', function(ws, res){
 		console.log('/removebook');
+		var authedUserId = ws.upgradeReq.session.passport.user;
 		ws.on('message', function(msg){
 			console.log('remove book: '+msg);
-			var wssMsg = msg.split('|');
-			console.log('wssMsg: '+JSON.stringify(wssMsg));
-			Users.find({'github.id': wssMsg[0]}, function(err, docs) {
+			Users.find({_id: authedUserId}, function(err, docs) {
 		    	if (err) throw err;
 		    	var userBooks = docs[0].books;
 		    	var updatedBooks = [];
 		    	for (var i=0;i<userBooks.length;i++){
-		    		if (userBooks[i].isbn13 != wssMsg[1]) updatedBooks.push(userBooks[i]);
+		    		if (userBooks[i].isbn13 != msg) updatedBooks.push(userBooks[i]);
 		    	}
-		    	Users.update({'github.id': wssMsg[0]}, {$set:{books:updatedBooks}}, function(err,dt){
+		    	Users.update({_id: authedUserId}, {$set:{books:updatedBooks}}, function(err,dt){
 			    	if (err) throw err;
 			        console.log('updated user: '+JSON.stringify(dt));
 			        ws.send('book removed, updated books for the owner: '+JSON.stringify(updatedBooks),function(error) {
@@ -356,7 +358,7 @@ module.exports = function (app, passport, jsdom, fs) {
 	app.ws('/edituser', function(ws, res){
 		console.log('/edituser');
 		var authedUserId = ws.upgradeReq.session.passport.user;
-		console.log('authed user id: '+authedUserId);
+		//console.log('authed user id: '+authedUserId);
 		/*
 		for(var key in ws.upgradeReq.session.passport){
 	      	console.log(key);
