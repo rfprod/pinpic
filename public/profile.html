@@ -86,6 +86,7 @@
 				    console.info("Received "+JSON.stringify(evt.data));
 				    mediaContainer.remove();
 				    console.log($('.books').children().length);
+				    $('#profile-books').html($('#profile-books').html()-1);
 				    if ($('.books').children().length == 0) {
 				    	$('.books').html('You do not own any books yet.');
 				    }

@@ -275,29 +275,43 @@ module.exports = function (app, passport, jsdom, fs) {
 						// add random book from parsed server response
 						var randomBookId = Math.floor(Math.random()*((resBookGoogleId.length-1)-0+1) + 0);
 						console.log('randomBookId: '+randomBookId);
-						userBooks.push({
-							name: resBookTitle[randomBookId],
-							isbn13: resBookISBN13[randomBookId],
-							googleVolumeId: resBookGoogleId[randomBookId],
-							thumbnail: resBookThumbnail[randomBookId],
-							timestamp: dateLog
-						});
-						console.log('userBooks updated');
-						console.log(userBooks);
-						/*
-						Users.update({_id:bookOwner}, {$set:{books:[]}}, function(err,dt){
-					    	if (err) throw err;
-					        console.log('updated user: '+JSON.stringify(dt));
-					        req.session.valid = true;
+						var bookAlreadyExists = false;
+						for (var z=0;z<userBooks.length;z++){
+							console.log(userBooks[z].isbn13+' | '+resBookISBN13[randomBookId]);
+				        	if (userBooks[z].isbn13 == resBookISBN13[randomBookId]) {
+				        		bookAlreadyExists = true;
+				        		break;
+				        	}
+				        }
+						console.log('bookAlreadyExists: '+bookAlreadyExists);
+						if (bookAlreadyExists == true){
+							req.session.valid = true;
 		  					res.redirect('/profile');
-					    });
-					    */
-						Users.update({_id:bookOwner}, {$set:{books:userBooks}}, function(err,dt){
-					    	if (err) throw err;
-					        console.log('updated user: '+JSON.stringify(dt));
-					        req.session.valid = true;
-		  					res.redirect('/profile');
-					    });
+						}else{
+							userBooks.push({
+								name: resBookTitle[randomBookId],
+								isbn13: resBookISBN13[randomBookId],
+								googleVolumeId: resBookGoogleId[randomBookId],
+								thumbnail: resBookThumbnail[randomBookId],
+								timestamp: dateLog
+							});
+							console.log('userBooks updated');
+							console.log(userBooks);
+							/*
+							Users.update({_id:bookOwner}, {$set:{books:[]}}, function(err,dt){
+						    	if (err) throw err;
+						        console.log('updated user: '+JSON.stringify(dt));
+						        req.session.valid = true;
+			  					res.redirect('/profile');
+						    });
+						    */
+							Users.update({_id:bookOwner}, {$set:{books:userBooks}}, function(err,dt){
+						    	if (err) throw err;
+						        console.log('updated user: '+JSON.stringify(dt));
+						        req.session.valid = true;
+			  					res.redirect('/profile');
+						    });
+						}
 					}
 				});
 			}).on('error', (e) => {
