@@ -286,7 +286,7 @@ module.exports = function (app, passport, jsdom, fs) {
 						console.log('bookAlreadyExists: '+bookAlreadyExists);
 						if (bookAlreadyExists == true){
 							req.session.valid = true;
-		  					res.redirect('/profile');
+		  					res.redirect('/profile#already-exists');
 						}else{
 							userBooks.push({
 								name: resBookTitle[randomBookId],

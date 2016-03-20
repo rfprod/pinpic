@@ -59,6 +59,7 @@
 						</form>
 					</div>
 					<hr>
+					<div id="dialog"></div>
 					<div class="output row books"></div>
 		        </div>
 		      </div>
@@ -70,6 +71,17 @@
 		<script type="text/javascript" src="controllers/userController.client.js"></script>
 		<script type="text/javascript" src="public/js/frontend-utility.js"></script>
 		<script>
+			$(document).ready(function(){
+				var urlHash = window.location.hash;
+				console.log('url hash: '+urlHash);
+				if (urlHash == '#already-exists') {
+					$('#dialog').html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not added</strong> You already possess the book you are trying to add.</div>');
+					setTimeout(function(){
+					    $('#dialog').html('');
+					    window.location.hash = '';
+				    },5000);
+				}
+			});
 			function removeBook(obj){
 				console.log($('.books').children().length);
 				var mediaContainer = $('#'+obj.id).parent().parent().parent();
