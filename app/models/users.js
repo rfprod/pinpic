@@ -11,11 +11,10 @@ var User = new Schema({
         publicRepos: Number
 	},
 	userExtended: {
-		optId: String,
-		optEmail: String,
-		optFullName: String,
-		optCity: String,
-		optState: String
+		email: String,
+		fullName: String,
+		city: String,
+		state: String
 	},
 	nbrClicks: {
 	    clicks: Number 

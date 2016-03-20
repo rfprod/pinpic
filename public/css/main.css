@@ -16,10 +16,14 @@ p {margin-top:0.5vh;}
 .output {text-align:center;}
 .output a:hover {text-decoration:none;}
 .profile {margin-top:2vh;}
+#edit-user-extended {width: 100%;}
+.done {display:none;}
+.user_extended {margin-top:2vh;}
 #user_instructions {color: #ff0000;}
 .checkbox {text-align: left;}
 .btn-toolbar {text-align:center;width:auto;max-width:100%;}
 #add-poll {width:100%;}
+.btn-edit-user-extended {width:100%;}
 /****************************/
 /* Clementine default style */
 /********** Fonts ***********/

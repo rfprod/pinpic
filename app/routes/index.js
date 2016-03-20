@@ -47,7 +47,7 @@ module.exports = function (app, passport, jsdom, fs) {
 						
 						// get data from google books API
 						var data = '';
-						var url = 'https://www.googleapis.com/books/v1/volumes?q=+intitle&startIndex=0&maxResults=40&key='+process.env.GOOGLE_API_SERVER_KEY;
+						var url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:&startIndex=0&maxResults=40&key='+process.env.GOOGLE_API_SERVER_KEY;
 						https.get(url, (response) => {
 							response.setEncoding('utf-8');
 							response.on('data', (chunk) => {
@@ -173,13 +173,18 @@ module.exports = function (app, passport, jsdom, fs) {
 						Users.find({_id: bookOwnerIdFilter}, function(err, docs) {
 						    if (err) throw err;
 						    var newHtml = null;
-						    //console.log(docs);
+						    console.log(docs);
 						    var userBooks = docs[0].books;
 						    var userInOffers = docs[0].offers.toUser;
 						    var userOutOffers = docs[0].offers.fromUser;
 						    $('#profile-books').html(userBooks.length);
 				        	$('#profile-in-offers').html(userInOffers.length);
 				        	$('#profile-out-offers').html(userOutOffers.length);
+				        	var userExtended = docs[0].userExtended;
+				        	if (typeof userExtended.email != 'undefined' && userExtended.email != '') $('input[id="profile-email"]').attr('value', userExtended.email);
+				        	if (typeof userExtended.fullName != 'undefined' && userExtended.fullName != '') $('input[id="profile-fullname"]').attr('value', userExtended.fullName);
+				        	if (typeof userExtended.city != 'undefined' && userExtended.city != '') $('input[id="profile-city"]').attr('value', userExtended.city);
+				        	if (typeof userExtended.state != 'undefined' && userExtended.state != '') $('input[id="profile-state"]').attr('value', userExtended.state);
 					        if (userBooks.length == 0) {
 					        	console.log('books do not exist');
 					        	$('.books').append('You do not own any books yet.');
@@ -348,6 +353,45 @@ module.exports = function (app, passport, jsdom, fs) {
 	        console.log('Remove book: ERROR');
 	    });
 	});
+	app.ws('/edituser', function(ws, res){
+		console.log('/edituser');
+		var authedUserId = ws.upgradeReq.session.passport.user;
+		console.log('authed user id: '+authedUserId);
+		/*
+		for(var key in ws.upgradeReq.session.passport){
+	      	console.log(key);
+	   	}
+	   	*/
+		ws.on('message', function(msg){
+			console.log('edit user: '+msg);
+			var wssMsg = msg.split('|');
+			console.log('wssMsg: '+JSON.stringify(wssMsg));
+			var updatedUserData = [];
+			Users.find({_id: authedUserId}, function(err, docs) {
+		    	if (err) throw err;
+		    	var userExtended = docs[0].userExtended;
+		    	console.log(userExtended.email+' | '+userExtended.fullName+' | '+userExtended.city+' | '+userExtended.state);
+
+		    	Users.update({_id: authedUserId}, {$set:{'userExtended.email':wssMsg[0], 'userExtended.fullName':wssMsg[1], 'userExtended.city':wssMsg[2], 'userExtended.state':wssMsg[3]}}, function(err,dt){
+			    	if (err) throw err;
+			        console.log('updated user: '+JSON.stringify(dt));
+			        ws.send('user updated: '+JSON.stringify(dt),function(error) {
+				    	if (error) throw error;
+					});
+			    });
+			    
+	        });
+	        ws.send('user data edited: '+JSON.stringify(updatedUserData),function(error) {
+		    	if (error) throw error;
+			});
+		});
+		ws.on('close', function() {
+	        console.log('Edit user data: Client disconnected.');
+	    });
+	    ws.on('error', function() {
+	        console.log('Edit user data: ERROR');
+	    });
+	});
 	app.route('/api/:id').get(isLoggedIn, function (req, res) {
 		res.json(req.user.github);
 	});
@@ -356,10 +400,8 @@ module.exports = function (app, passport, jsdom, fs) {
 		successRedirect: '/profile',
 		failureRedirect: '/login'
 	}));
-	
 	app.route('/api/:id/clicks')
 		.get(isLoggedIn, clickHandler.getClicks)
 		.post(isLoggedIn, clickHandler.addClick)
 		.delete(isLoggedIn, clickHandler.resetClicks);
-	
 };

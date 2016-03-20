@@ -3,6 +3,7 @@ var Users = require('../models/users.js');
 var Polls = require('../models/polls.js');
 function ClickHandler () {
 	this.getClicks = function (req, res) {
+		/*
 		Polls.aggregate([
 	 		{$match: { owner: req.session.passport.user}},
 	 		{$project: {
@@ -15,8 +16,12 @@ function ClickHandler () {
 		 	//console.log(JSON.stringify(data));
 		 	res.json(data);
 		});
+		*/
+		var data = [];
+		res.json(data);
 	};
 	this.addClick = function (req, res) {
+		/*
 		Polls.aggregate([
 	 		{$match: { owner: req.session.passport.user}},
 	 		{$project: {
@@ -29,8 +34,12 @@ function ClickHandler () {
 		 	//console.log(JSON.stringify(data));
 		 	res.json(data);
 		});
+		*/
+		var data = [];
+		res.json(data);
 	};
 	this.resetClicks = function (req, res) {
+		/*
 		Polls.find({owner: req.session.passport.user}, function(err,data){
 		 	if(err) throw err;
 		 	var filtered = [];
@@ -41,6 +50,9 @@ function ClickHandler () {
 			//console.log(JSON.stringify(filtered));
 		 	res.json(filtered);
 		});
+		*/
+		var data = [];
+		res.json(data);
 	};
 }
 module.exports = ClickHandler;

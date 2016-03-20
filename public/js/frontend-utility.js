@@ -1,58 +1,41 @@
-function getRandomColor(){
-	function c(){return Math.floor(Math.random()*256).toString(16);}
-	var colorHEX = "#"+c()+c()+c();
-	if (colorHEX.length < 7) colorHEX += "c";
-	//console.log("colorHEX: "+colorHEX);
-	return colorHEX;
-}
-String.prototype.replaceAt = function(index, character){
-    return this.substr(0, index) + character + this.substr(index+character.length);
-};
-function drawDoughbutChart(id, size, values, labels){
-	var canvasId = "#"+id;
-	var doughnutContext = $(canvasId).get(0).getContext("2d");
-	doughnutContext.canvas.height = 175;
-	var palette = [];
-	var highlights = [];
-	var data = [];
-	for (var i=0;i<size;i++){
-		(function getUniquePalette(){
-			var randomColor = getRandomColor();
-			if (palette.indexOf(randomColor) === -1 && highlights.indexOf(randomColor) === -1) palette.push(randomColor);
-			else getUniquePalette();
-		})();
-		(function getUniqueHighlights(){
-			var randomColor = getRandomColor();
-			if (palette.indexOf(randomColor) === -1 && highlights.indexOf(randomColor) === -1) highlights.push(randomColor);
-			else getUniqueHighlights();
-		})();
-		data.push({
-			value: parseInt(values[i],10),
-			color: palette[i],
-			highlight: highlights[i],
-			label: labels[i]
-		});
+$(document).ready(function(){
+	var urlHash = window.location.hash;
+	console.log('url hash: '+urlHash);
+	if (urlHash == '#already-exists') {
+		$('#dialog').html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not added</strong> You already possess the book you are trying to add.</div>');
+		setTimeout(function(){
+		    $('#dialog').html('');
+		    window.location.hash = '';
+	    },5000);
 	}
-	console.log("palette: "+palette+" | "+"highlights: "+highlights);
-	var options = {
-		segmentShowStroke : true,
-		segmentStrokeColor : "rgba(0,0,0,0.2)",
-		segmentStrokeWidth : 2,
-		percentageInnerCutout : 50,
-		animationSteps : 100,
-		animationEasing : "easeOutBounce",
-		animateRotate : true,
-		animateScale : true,
-		legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){%><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>",
-		tooltipTemplate: "<%= label %>: <%= value %>",
-		tooltipFontSize: 16,
-		tooltipFontStyle: "bold",
-		tooltipFontColor: "#fff",
-		tooltipTitleFontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif"
-	};
-	var doughnutChart = new Chart(doughnutContext).Doughnut(data, options);
-	window.onresize = function(event) {
-		doughnutChart.destroy();
-		doughnutChart = new Chart(doughnutContext).Doughnut(data, options);
-	};
+});
+function removeBook(obj){
+	console.log($('.books').children().length);
+	var mediaContainer = $('#'+obj.id).parent().parent().parent();
+	console.log(mediaContainer.attr('id'));
+	var bookISBN13 = mediaContainer.find('#book_isbn13').html();
+	var bookOwnerId = $('#profile-id').html();
+	console.log('data removal invoked, owner id: '+bookOwnerId+', book\'s isbn13: '+bookISBN13);
+	var connRemove = new WebSocket("wss://book-trading-club-rfprod.c9users.io/removebook");
+    connRemove.onopen = function(){
+	    console.log("Removing book. Connection opened");
+	    connRemove.send(bookOwnerId+'|'+bookISBN13);
+    }
+    connRemove.onmessage = function(evt){
+	    console.info("Received "+JSON.stringify(evt.data));
+	    mediaContainer.remove();
+	    console.log($('.books').children().length);
+	    $('#profile-books').html($('#profile-books').html()-1);
+	    if ($('.books').children().length == 0) {
+	    	$('.books').html('You do not own any books yet.');
+	    }
+	    connRemove.close();
+    };
+    connRemove.onerror = function(error){
+	    console.error("Error:"+JSON.stringify(error));
+	    connRemove.close();
+    };
+    connRemove.onclose = function(){
+	    console.log("Stock removed. Connection closed");
+    };
 }
