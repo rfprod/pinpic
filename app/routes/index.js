@@ -11,7 +11,6 @@ module.exports = function (app, passport, jsdom, fs) {
 	
 	var jquerySource = fs.readFileSync(path + "/public/js/jquery.min.js", "utf-8");
 	var serializeDocument = jsdom.serializeDocument;
-	var htmlUIuniformDropdownOption = "<option value='one'>One</option>";
 
 	function isLoggedIn(req, res, next){
 		if (req.isAuthenticated()) return next();
@@ -118,9 +117,8 @@ module.exports = function (app, passport, jsdom, fs) {
 						        		bookOwner = docs[i].github.id;
 						        		console.log('book owner: '+bookOwner);
 						        		var userBooks = docs[i].books;
-						        		
 										for (var z=0;z<userBooks.length;z++){
-											console.log(userBooks[i]);
+											console.log(userBooks[z]);
 											/*$('.options-selector').last().append(htmlUIuniformDropdownOption);
 											$('option').last().val(pollOptions[z]);
 											$('option').last().html(pollOptions[z]);*/
@@ -188,22 +186,24 @@ module.exports = function (app, passport, jsdom, fs) {
 					        	$('.books').append('You do not own any books yet.');
 					        }else{
 					        	console.log('at least one book exists');
-					        	for (var i=0;i<userBooks.length;i++){
+					        	console.log(JSON.stringify(userBooks));
+					        	console.log(userBooks.length);
+					        	for (var z=0;z<userBooks.length;z++){
 									$('.books').append(bookTemplate);
 									var mediaContainer = $('.media').last();
-									mediaContainer.attr('id',userBooks[i].isbn13);
-									mediaContainer.find('#book_thumbnail_link').attr('href',userBooks[i].thumbnail);
-									mediaContainer.find('#book_thumbnail_img').attr('src',userBooks[i].thumbnail);
-									mediaContainer.find('#book_name').html(userBooks[i].name);
-									mediaContainer.find('#book_isbn13').html(userBooks[i].isbn13);
-									mediaContainer.find('#book_googleBookId').html(userBooks[i].googleVolumeId);
-									mediaContainer.find('#book_timestamp').html(userBooks[i].timestamp);
+									mediaContainer.attr('id',userBooks[z].isbn13);
+									mediaContainer.find('#book_thumbnail_link').attr('href',userBooks[z].thumbnail);
+									mediaContainer.find('#book_thumbnail_img').attr('src',userBooks[z].thumbnail);
+									mediaContainer.find('#book_name').html(userBooks[z].name);
+									mediaContainer.find('#book_isbn13').html(userBooks[z].isbn13);
+									mediaContainer.find('#book_googleBookId').html(userBooks[z].googleVolumeId);
+									mediaContainer.find('#book_timestamp').html(userBooks[z].timestamp);
 									if (userInOffers.length == 0){
 										mediaContainer.find('#accept-offer').addClass('disabled');
 										mediaContainer.find('#reject-offer').addClass('disabled');
 									}
 									for (var i=0;i<userInOffers.length;i++){
-							        	if (userInOffers[i].completed == 'false' && userInOffers[i].isbn13 == userBooks[i].isbn13){
+							        	if (userInOffers[i].completed == 'false' && userInOffers[i].isbn13 == userBooks[z].isbn13){
 							        		var offerUnitHTML = "<div class='checkbox'><label><input type='checkbox' value=''>User id"+userInOffers[i].userID+" is interested in buying this book for "+userInOffers[i].amountOffered+".</label></div>";
 							        		mediaContainer.find('#offer-details').append(offerUnitHTML);
 							        	}
