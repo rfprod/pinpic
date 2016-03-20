@@ -112,28 +112,26 @@ module.exports = function (app, passport, jsdom, fs) {
 						        }
 						        else {
 						        	console.log('at least one user exists, checking if user has books to offer');
+						        	var booksDOMobjChildren = $('.books').children();
+						        	console.log(booksDOMobjChildren);
 						        	for (var i=0;i<docs.length;i++){
-						        		
 						        		bookOwner = docs[i].github.id;
 						        		console.log('book owner: '+bookOwner);
 						        		var userBooks = docs[i].books;
 										for (var z=0;z<userBooks.length;z++){
 											console.log(userBooks[z]);
+											var bookISBN13index = resBookISBN13.indexOf(userBooks[z].isbn13);
+											console.log(bookISBN13index);
+											if (bookISBN13index != -1) {
+												var selectBook = booksDOMobjChildren.eq(bookISBN13index);
+												console.log(selectBook);
+												selectBook.find('#book_owner').html(bookOwner);
+												selectBook.find('#req-book').removeClass('disabled');
+											}
 											/*$('.options-selector').last().append(htmlUIuniformDropdownOption);
 											$('option').last().val(pollOptions[z]);
 											$('option').last().html(pollOptions[z]);*/
 										}
-						        		
-						        		/*pollId = "poll-"+docs[i]._id;
-						        		pollName = docs[i].displayName;
-						        		pollQuestion = docs[i].question;
-										pollVotes = docs[i].votes;
-										pollOptions = docs[i].options;
-										pollLength = pollVotes.length;*/
-										
-										/*
-										$('#book_owner').last().html(bookOwner);
-										*/
 						        	}
 									console.log("index page DOM manipulations complete");
 									newHtml = serializeDocument(window.document);
@@ -243,7 +241,7 @@ module.exports = function (app, passport, jsdom, fs) {
 	        	userBooks.push(data[0].books[i]);
 	        }
 	        //console.log('userBooks : '+userBooks);
-	        var jsonTotalItems = 0, resBookGoogleId = [], resBookTitle = [], resBookDescription = [], resBookISBN13 = [], resBookThumbnail = [];
+	        var jsonTotalItems = 0, resBookGoogleId = [], resBookTitle = [], resBookISBN13 = [], resBookThumbnail = [];
 	        // get data from google books API
 			var apiData = '';
 			var url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:'+bookName+'&startIndex=0&maxResults=40&key='+process.env.GOOGLE_API_SERVER_KEY;
@@ -259,37 +257,46 @@ module.exports = function (app, passport, jsdom, fs) {
 					//console.log(jsonItems);
 					jsonTotalItems = json.totalItems;
 					console.log('jsonTotalItems: '+jsonTotalItems);
-					for (var i=0;i<jsonItems.length-1;i++){
-						if (typeof jsonItems[i].id != 'undefined' &&
-							typeof jsonItems[i].volumeInfo.title != 'undefined' &&
-							typeof jsonItems[i].volumeInfo.description != 'undefined' &&
-							typeof jsonItems[i].volumeInfo.industryIdentifiers != 'undefined' &&
-							typeof jsonItems[i].volumeInfo.imageLinks != 'undefined')
-						{
-							resBookGoogleId.push(jsonItems[i].id);
-							resBookTitle.push(jsonItems[i].volumeInfo.title);
-							resBookDescription.push(jsonItems[i].volumeInfo.description);
-							resBookISBN13.push(jsonItems[i].volumeInfo.industryIdentifiers[0].identifier);
-							resBookThumbnail.push(jsonItems[i].volumeInfo.imageLinks.thumbnail);
+					if (jsonTotalItems > 0){
+						for (var i=0;i<jsonItems.length;i++){
+							if (typeof jsonItems[i].id != 'undefined' &&
+								typeof jsonItems[i].volumeInfo.title != 'undefined' &&
+								typeof jsonItems[i].volumeInfo.industryIdentifiers != 'undefined' &&
+								typeof jsonItems[i].volumeInfo.imageLinks != 'undefined')
+							{
+								resBookGoogleId.push(jsonItems[i].id);
+								resBookTitle.push(jsonItems[i].volumeInfo.title);
+								resBookISBN13.push(jsonItems[i].volumeInfo.industryIdentifiers[0].identifier);
+								resBookThumbnail.push(jsonItems[i].volumeInfo.imageLinks.thumbnail);
+							}
 						}
+						// add random book from parsed server response
+						var randomBookId = Math.floor(Math.random()*((resBookGoogleId.length-1)-0+1) + 0);
+						console.log('randomBookId: '+randomBookId);
+						userBooks.push({
+							name: resBookTitle[randomBookId],
+							isbn13: resBookISBN13[randomBookId],
+							googleVolumeId: resBookGoogleId[randomBookId],
+							thumbnail: resBookThumbnail[randomBookId],
+							timestamp: dateLog
+						});
+						console.log('userBooks updated');
+						console.log(userBooks);
+						/*
+						Users.update({_id:bookOwner}, {$set:{books:[]}}, function(err,dt){
+					    	if (err) throw err;
+					        console.log('updated user: '+JSON.stringify(dt));
+					        req.session.valid = true;
+		  					res.redirect('/profile');
+					    });
+					    */
+						Users.update({_id:bookOwner}, {$set:{books:userBooks}}, function(err,dt){
+					    	if (err) throw err;
+					        console.log('updated user: '+JSON.stringify(dt));
+					        req.session.valid = true;
+		  					res.redirect('/profile');
+					    });
 					}
-					// add random book from parsed server response
-					var randomBookId = Math.floor(Math.random()*((resBookGoogleId.length-1)-0+1) + 0);
-					userBooks.push({
-						name: resBookTitle[randomBookId],
-						isbn13: resBookISBN13[randomBookId],
-						googleVolumeId: resBookGoogleId[randomBookId],
-						thumbnail: resBookThumbnail[randomBookId],
-						timestamp: dateLog
-					});
-					console.log('userBooks updated');
-					console.log(userBooks);
-					Users.update({_id:bookOwner}, {$set:{books:userBooks}}, function(err,dt){
-				    	if (err) throw err;
-				        console.log('updated user: '+JSON.stringify(dt));
-				        req.session.valid = true;
-	  					res.redirect('/profile');
-				    });
 				});
 			}).on('error', (e) => {
 				console.log('error: ${e.message}');
