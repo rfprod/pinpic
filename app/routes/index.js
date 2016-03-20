@@ -97,7 +97,6 @@ module.exports = function (app, passport, jsdom, fs) {
 						});
 						
 						function getBookOwnersFromDB(){
-							// get users data to see offerings
 							var bookOwner = "";
 							var newHtml = null;
 							console.log('getting books data from DB');
@@ -125,12 +124,14 @@ module.exports = function (app, passport, jsdom, fs) {
 											if (bookISBN13index != -1) {
 												var selectBook = booksDOMobjChildren.eq(bookISBN13index);
 												console.log(selectBook);
-												selectBook.find('#book_owner').html(bookOwner);
-												selectBook.find('#req-book').removeClass('disabled');
+												var bookOwnerDOM = selectBook.find('#book_owner');
+												bookOwnerDOM.html(bookOwner);
+												var reqBookDOM = selectBook.find('#req-book');
+												if (isLoggedInBool(req,res) && bookOwnerDOM.html() == bookOwner) {
+													reqBookDOM.html('You own the book');
+													reqBookDOM.removeClass('btn-info').addClass('btn-success');
+												}else reqBookDOM.removeClass('disabled');
 											}
-											/*$('.options-selector').last().append(htmlUIuniformDropdownOption);
-											$('option').last().val(pollOptions[z]);
-											$('option').last().html(pollOptions[z]);*/
 										}
 						        	}
 									console.log("index page DOM manipulations complete");
@@ -196,6 +197,7 @@ module.exports = function (app, passport, jsdom, fs) {
 									mediaContainer.find('#book_isbn13').html(userBooks[z].isbn13);
 									mediaContainer.find('#book_googleBookId').html(userBooks[z].googleVolumeId);
 									mediaContainer.find('#book_timestamp').html(userBooks[z].timestamp);
+									mediaContainer.find('#remove-book').attr('id','remove-book-'+userBooks[z].isbn13);
 									if (userInOffers.length == 0){
 										mediaContainer.find('#accept-offer').addClass('disabled');
 										mediaContainer.find('#reject-offer').addClass('disabled');

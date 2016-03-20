@@ -73,6 +73,7 @@
 			function removeBook(obj){
 				console.log($('.books').children().length);
 				var mediaContainer = $('#'+obj.id).parent().parent().parent();
+				console.log(mediaContainer.attr('id'));
 				var bookISBN13 = mediaContainer.find('#book_isbn13').html();
 				var bookOwnerId = $('#profile-id').html();
 				console.log('data removal invoked, owner id: '+bookOwnerId+', book\'s isbn13: '+bookISBN13);
