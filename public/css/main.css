@@ -24,6 +24,7 @@ p {margin-top:0.5vh;}
 .btn-toolbar {text-align:center;width:auto;max-width:100%;}
 .btn-edit-user-extended {width:100%;}
 #email-auth {margin-top:2vh;}
+#dialog {display: block;}
 /****************************/
 /* Clementine default style */
 /********** Fonts ***********/

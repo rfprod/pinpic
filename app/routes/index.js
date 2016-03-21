@@ -24,7 +24,7 @@ module.exports = function (app, passport, jsdom, fs) {
 	app.route('/').get(function (req, res) {
 		console.log('/');
 		var htmlNavAuthed = "<li class='nav-pills active'><a href='#app'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/profile'><span class='glyphicon glyphicon-user'></span> My Books</a></li><li class='nav-pills'><a href='/logout'><span class='glyphicon glyphicon-remove'></span> Logout</a></li>";
-		var htmlNavNotAuthed = "<li class='nav-pills active'><a href='/'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/login'><span class='glyphicon glyphicon-user'></span> Login With Github</a></li>";
+		var htmlNavNotAuthed = "<li class='nav-pills active'><a href='/'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/login'><span class='glyphicon glyphicon-user'></span> Sign up / Login</a></li>";
 		var htmlSourceIndex = null;
 		var bookTemplate = null;
 		fs.readFile(path + "/app/models/book.html","utf-8", function(err,data){
@@ -228,6 +228,57 @@ module.exports = function (app, passport, jsdom, fs) {
 			});
 		});
 	});
+	
+	app.ws(/emailsignup/, function(ws, res){
+    	console.log('/emailsignup');
+    	ws.on('message', function(msg){
+			console.log('email sign up: '+msg);
+			var wssMsg = msg.split('|');
+			console.log('wssMsg: '+JSON.stringify(wssMsg));
+			var response = '';
+			Users.find({'userExtended.email':wssMsg[0]}, function(err,data){
+		    	if (err) throw err;
+		        //console.log(data);
+		        if (data.length == 0) {
+		        	response = 'success: account does not exist, creating account.';
+		        	console.log(response);
+		        	// create account
+		        	if (wssMsg[1] == wssMsg[2]){
+		        		var newUser = new Users();
+							newUser.userExtended.email = wssMsg[0];
+							newUser.userExtended.pass = wssMsg[1];
+							newUser.save(function (err) {
+								if (err) throw err;
+								console.log('data saved: new user created');
+							});
+							console.log(newUser);
+						ws.send(response,function(error) {if (error) throw error;});
+		        	}else{
+		        		response = 'error: passwords do not match.';
+			        	console.log(response);
+			        	ws.send(response,function(error) {if (error) throw error;});
+		        	}
+		        }else{
+		        	response = 'error: account associated with this email already exists';
+		        	console.log(response);
+		        	ws.send(response,function(error) {if (error) throw error;});
+		        }
+		    });
+		});
+		ws.on('close', function() {
+	        console.log('Email sign up: Client disconnected.');
+	    });
+	    ws.on('error', function() {
+	        console.log('Email sign up: ERROR');
+	    });
+	});
+	app.route('/emaillogin/').post(passport.authenticate('local', { failureRedirect: '/login' }), function(req, res) {
+		var emailLogin = req.body.emailLogin;
+		var passwordLogin = req.body.passwordLogin;
+		console.log('emailLogin: '+emailLogin+" | passwordLogin: "+passwordLogin);
+	    res.redirect('/profile');
+	});	
+	
 	app.route(/addbook/).post(isLoggedIn, function(req, res){
 		var bookOwner = req.session.passport.user;
 		console.log(bookOwner);
@@ -372,8 +423,7 @@ module.exports = function (app, passport, jsdom, fs) {
 			Users.find({_id: authedUserId}, function(err, docs) {
 		    	if (err) throw err;
 		    	var userExtended = docs[0].userExtended;
-		    	console.log(userExtended.email+' | '+userExtended.fullName+' | '+userExtended.city+' | '+userExtended.state);
-
+		    	console.log('current values: '+userExtended.email+' | '+userExtended.fullName+' | '+userExtended.city+' | '+userExtended.state);
 		    	Users.update({_id: authedUserId}, {$set:{'userExtended.email':wssMsg[0], 'userExtended.fullName':wssMsg[1], 'userExtended.city':wssMsg[2], 'userExtended.state':wssMsg[3]}}, function(err,dt){
 			    	if (err) throw err;
 			        console.log('updated user: '+JSON.stringify(dt));

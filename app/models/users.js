@@ -12,6 +12,7 @@ var User = new Schema({
 	},
 	userExtended: {
 		email: String,
+		pass: String,
 		fullName: String,
 		city: String,
 		state: String
