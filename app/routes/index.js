@@ -43,22 +43,17 @@ module.exports = function (app, passport, jsdom, fs) {
 						//$('.books').html("IT'S ALIVE! ALIVE!!!!");
 						if (isLoggedInBool(req, res)) $('.navbar-right').html(htmlNavAuthed);
 						else $('.navbar-right').html(htmlNavNotAuthed);
-						
 						var jsonTotalItems = 0, resBookGoogleId = [], resBookTitle = [], resBookDescription = [], resBookISBN13 = [], resBookThumbnail = [];
-						
 						// get data from google books API
 						var data = '';
 						var url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:&startIndex=0&maxResults=40&key='+process.env.GOOGLE_API_SERVER_KEY;
 						https.get(url, (response) => {
 							response.setEncoding('utf-8');
-							response.on('data', (chunk) => {
-								data += chunk;
-							});
+							response.on('data', (chunk) => {data += chunk;});
 							response.on('end', () => {
 								console.log('no more data in response');
 								var json = JSON.parse(data);
 								var jsonItems = json.items;
-								//console.log(jsonItems);
 								jsonTotalItems = json.totalItems;
 								console.log('jsonTotalItems: '+jsonTotalItems);
 								for (var i=0;i<jsonItems.length-1;i++){
@@ -75,12 +70,11 @@ module.exports = function (app, passport, jsdom, fs) {
 										resBookThumbnail.push(jsonItems[i].volumeInfo.imageLinks.thumbnail);
 									}
 								}
-								console.log('resBookGoogleId: '+resBookGoogleId);
+								/*console.log('resBookGoogleId: '+resBookGoogleId);
 								console.log('resBookTitle: '+resBookTitle);
 								console.log('resBookDescription: '+resBookDescription);
 								console.log('resBookISBN13: '+resBookISBN13);
-								console.log('resBookThumbnail: '+resBookThumbnail);
-								
+								console.log('resBookThumbnail: '+resBookThumbnail);*/
 								for (var i=0;i<resBookGoogleId.length;i++){
 									$('.books').append(bookTemplate);
 									var mediaContainer = $('.media').last();
@@ -101,7 +95,7 @@ module.exports = function (app, passport, jsdom, fs) {
 						});
 						
 						function getBookOwnersFromDB(){
-							var bookOwner = "";
+							var bookOwner = '';
 							var newHtml = null;
 							console.log('getting books data from DB');
 							Users.find({}, function(err, docs) {
@@ -112,32 +106,29 @@ module.exports = function (app, passport, jsdom, fs) {
 									newHtml = serializeDocument(window.document);
 									res.send(newHtml);
 									window.close();
-						        }
-						        else {
+						        }else{
 						        	console.log('at least one user exists, checking if user has books to offer');
 						        	var booksDOMobjChildren = $('.books').children();
 						        	console.log(booksDOMobjChildren);
 						        	console.log(docs);
 						        	for (var i=0;i<docs.length;i++){
 						        		bookOwner = docs[i]._id.toString();
-						        		//console.log('book owner: '+bookOwner);
 						        		var userBooks = docs[i].books;
 										for (var z=0;z<userBooks.length;z++){
-											//console.log(userBooks[z]);
 											var bookISBN13index = resBookISBN13.indexOf(userBooks[z].isbn13);
-											//console.log(bookISBN13index);
 											if (bookISBN13index != -1) {
 												var selectBook = booksDOMobjChildren.eq(bookISBN13index);
-												//console.log(selectBook);
 												var bookOwnerDOM = selectBook.find('#book_owner');
-												bookOwnerDOM.html(bookOwner);
+												var currentValue = parseInt(bookOwnerDOM.html(),10);
+												currentValue++;
+												bookOwnerDOM.html(currentValue);
 												var reqBookDOM = selectBook.find('.btn-request-book');
 												var addBookDOM = selectBook.find('.btn-add-book');
-												//if (isLoggedInBool(req,res)) console.log('owner check: '+bookOwner+' ~ '+req.session.passport.user);
 												if (isLoggedInBool(req,res) && bookOwner == req.session.passport.user){
 													addBookDOM.addClass('disabled');
 													reqBookDOM.html('You own the book');
 													reqBookDOM.removeClass('btn-info').addClass('btn-success');
+													reqBookDOM.addClass('disabled');
 												}else reqBookDOM.removeClass('disabled');
 											}
 										}
@@ -165,7 +156,6 @@ module.exports = function (app, passport, jsdom, fs) {
 	app.route('/profile').get(isLoggedIn, function (req, res) {
 		console.log('/profile');
 		var bookOwnerIdFilter = req.session.passport.user;
-		//console.log('bookOwnerIdFilter: '+bookOwnerIdFilter);
 		var htmlSourceProfile = null;
 		var bookTemplate = null;
 		fs.readFile(path + "/app/models/book-editable.html","utf-8", function(err,data){
@@ -222,7 +212,7 @@ module.exports = function (app, passport, jsdom, fs) {
 									}
 									for (var i=0;i<userInOffers.length;i++){
 							        	if (userInOffers[i].completed == 'false' && userInOffers[i].isbn13 == userBooks[z].isbn13){
-							        		var offerUnitHTML = "<div class='checkbox'><label><input type='checkbox' value=''>User id"+userInOffers[i].userID+" is interested in buying this book for "+userInOffers[i].amountOffered+".</label></div>";
+							        		var offerUnitHTML = "<div class='checkbox'><label><input type='checkbox' value=''>User id"+userInOffers[i].userID+" is interested in buying this book.'</label></div>";
 							        		mediaContainer.find('#offer-details').append(offerUnitHTML);
 							        	}
 							        }
@@ -248,11 +238,9 @@ module.exports = function (app, passport, jsdom, fs) {
 			var response = '';
 			Users.find({'userExtended.email':wssMsg[0]}, function(err,data){
 		    	if (err) throw err;
-		        //console.log(data);
 		        if (data.length == 0) {
 		        	response = 'success: account does not exist, creating account.';
 		        	console.log(response);
-		        	// create account
 		        	if (wssMsg[1] == wssMsg[2]){
 		        		var newUser = new Users();
 							newUser.userExtended.email = wssMsg[0];
@@ -306,12 +294,10 @@ module.exports = function (app, passport, jsdom, fs) {
 			dateLog = year+"-"+month+"-"+day+" "+hours+":"+minutes;
     	Users.find({_id: bookOwner}, function(err,data){
 	    	if (err) throw err;
-	        //console.log(data);
 	        var userBooks = [];
 	        for (var i=0;i<data[0].books.length;i++){
 	        	userBooks.push(data[0].books[i]);
 	        }
-	        //console.log('userBooks : '+userBooks);
 	        var jsonTotalItems = 0, resBookGoogleId = [], resBookTitle = [], resBookISBN13 = [], resBookThumbnail = [];
 	        // get data from google books API
 			var apiData = '';
@@ -366,14 +352,6 @@ module.exports = function (app, passport, jsdom, fs) {
 							});
 							console.log('userBooks updated');
 							console.log(userBooks);
-							/*
-							Users.update({_id:bookOwner}, {$set:{books:[]}}, function(err,dt){
-						    	if (err) throw err;
-						        console.log('updated user: '+JSON.stringify(dt));
-						        req.session.valid = true;
-			  					res.redirect('/profile');
-						    });
-						    */
 							Users.update({_id:bookOwner}, {$set:{books:userBooks}}, function(err,dt){
 						    	if (err) throw err;
 						        console.log('updated user: '+JSON.stringify(dt));
@@ -388,8 +366,8 @@ module.exports = function (app, passport, jsdom, fs) {
 			});
 	    });
 	});
-	app.ws('/addbookbyid', function(ws, res){
-		console.log('/addbookbyid');
+	app.ws('/addbookbyisbn', function(ws, res){
+		console.log('/addbookbyisbn');
 		var authedUserId = ws.upgradeReq.session.passport.user;
 		ws.on('message', function(msg){
 			console.log('add book by isbn: '+msg);
@@ -447,7 +425,7 @@ module.exports = function (app, passport, jsdom, fs) {
 									Users.update({_id:authedUserId}, {$set:{books:userBooks}}, function(err,dt){
 								    	if (err) throw err;
 								        console.log('updated user: '+JSON.stringify(dt));
-					  					ws.send('Success: book added to your collection.'/*+JSON.stringify(userBooks)*/,function(error) {
+					  					ws.send('Success: book added to your collection.',function(error) {
 									    	if (error) throw error;
 										});
 								    });
@@ -461,10 +439,86 @@ module.exports = function (app, passport, jsdom, fs) {
 	        });
 		});
 		ws.on('close', function() {
-	        console.log('Add book by google volume id: Client disconnected.');
+	        console.log('Add book by isbn13: Client disconnected.');
 	    });
 	    ws.on('error', function() {
-	        console.log('Add book by google volume id: ERROR');
+	        console.log('Add book by isbn13: ERROR');
+	    });
+	});
+	app.ws('/requestbook', function(ws, res){
+		console.log('/requestbook');
+		ws.on('message', function(msg){
+			console.log('request book: '+msg);
+	        if (typeof ws.upgradeReq.session.passport != 'undefined'){
+				var authedUserId = ws.upgradeReq.session.passport.user;
+				console.log('authedUserId: '+authedUserId);
+				var dateLog = "";
+					var date = new Date();
+					var year = date.getFullYear();
+					var month = date.getMonth()+1;
+					if (month <10) month = "0"+month;
+					var day = date.getDate();
+					var hours = date.getHours();
+					var minutes = date.getMinutes();
+					if (minutes <10) minutes = "0"+minutes;
+					dateLog = year+"-"+month+"-"+day+" "+hours+":"+minutes;
+				Users.find({_id: authedUserId}, function(err, docs) {
+			    	if (err) throw err;
+			    	var fromUserOffers = docs[0].offers.fromUser;
+			    	var bookOwner = '';
+			    	Users.find({}, function(err, dcs) {
+				    	if (err) throw err;
+				    	loop1:
+				    	for (var d=0;d<dcs.length;d++){
+				    		var userBooks = dcs[d].books;
+				    		loop2:
+				    		for (var b=0;b<userBooks.length;b++){
+				    			if (userBooks[b].isbn13 == msg) {
+				    				bookOwner = dcs[d]._id;
+				    				console.log(bookOwner);
+				    				break loop1;
+				    			}
+				    		}
+				    	}
+				    	fromUserOffers.push({
+				    		userID: bookOwner,
+							bookISBN: msg,
+							timestamp: dateLog,
+							completed: false
+				    	});
+				    	/* update fromUser offers for the authed user
+				    	Users.update({_id: authedUserId}, {$set:{'offers.fromUser':fromUserOffers}}, function(err,dt){
+					    	if (err) throw err;
+					        console.log('updated user: '+JSON.stringify(dt));
+					        Users.find({_id: bookOwner}, function(err, docOwner) {
+						    	if (err) throw err;
+						    	var toUserOffers = docOwner[0].offers.toUser;
+						    	toUserOffers.push({
+						    		userID: authedUserOwner,
+									bookISBN: msg,
+									timestamp: dateLog,
+									completed: false
+						    	});
+						    	Users.update({_id: bookOwner}, {$set:{'offers.toUser':toUserOffers}}, function(err,dt){
+							    	if (err) throw err;
+							        console.log('updated user: '+JSON.stringify(dt));
+							        ws.send('book requested by authed user id: '+authedUserId+', offers from user updated: '+JSON.stringify(fromUserOffers)+'\n book owner id: '+bookOwner+', offers to user updated: '+JSON.stringify(toUserOffers),function(error) {
+								    	if (error) throw error;
+									});
+							    });
+					        });
+					    });
+					    */
+				    	ws.send('book requested by authed user id: '+authedUserId+', offers from user updated: '+JSON.stringify(fromUserOffers),function(error) {if (error) throw error;});
+			        });
+		        });
+	        }else ws.send('Error: authentication required',function(error) {if (error) throw error;});
+		});
+		ws.on('close', function() {
+	        console.log('Remove book: Client disconnected.');
+	    });
+	    ws.on('error', function() {
+	        console.log('Remove book: ERROR');
 	    });
 	});
 	app.ws('/removebook', function(ws, res){
@@ -522,9 +576,7 @@ module.exports = function (app, passport, jsdom, fs) {
 			    });
 			    
 	        });
-	        ws.send('user data edited: '+JSON.stringify(updatedUserData),function(error) {
-		    	if (error) throw error;
-			});
+	        ws.send('user data edited: '+JSON.stringify(updatedUserData),function(error) {if (error) throw error;});
 		});
 		ws.on('close', function() {
 	        console.log('Edit user data: Client disconnected.');

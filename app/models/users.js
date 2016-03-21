@@ -31,14 +31,12 @@ var User = new Schema({
 		toUser: [{
 			userID: String,
 			bookISBN: String,
-			amountOffered: String,
 			timestamp: String,
 			completed: Boolean
 		}],
 		fromUser: [{
 			userID: String,
 			bookISBN: String,
-			amountOffered: String,
 			timestamp: String,
 			completed: Boolean
 		}]
