@@ -129,7 +129,7 @@ module.exports = function (app, passport, jsdom, fs) {
 												var bookOwnerDOM = selectBook.find('#book_owner');
 												bookOwnerDOM.html(bookOwner);
 												var reqBookDOM = selectBook.find('#req-book');
-												if (isLoggedInBool(req,res) && bookOwnerDOM.html() == bookOwner) {
+												if (isLoggedInBool(req,res) && bookOwnerDOM.html() == req.session.user) {
 													reqBookDOM.html('You own the book');
 													reqBookDOM.removeClass('btn-info').addClass('btn-success');
 												}else reqBookDOM.removeClass('disabled');
