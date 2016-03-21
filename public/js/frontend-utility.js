@@ -88,3 +88,34 @@ function emailSignup(obj){
 	    console.log("Email sugn up. Connection closed");
     };
 }
+function addBookByVolumeId(obj){
+	console.log(obj);
+	var formContainer = $('#'+obj.id).parent().parent().parent();
+	var bookISBN13 = obj.id;
+	console.log('bookISBN13: '+bookISBN13);
+	var connAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/addbookbyid");
+    connAddById.onopen = function(){
+	    console.log("Add book by volume id. Connection opened");
+	    connAddById.send(bookISBN13);
+    }
+    connAddById.onmessage = function(evt){
+    	var responseString = JSON.stringify(evt.data);
+	    console.info("Received "+responseString);
+	    alert(responseString);
+	    var reqBookDOM = formContainer.find('.btn-request-book');
+	    console.log(reqBookDOM.attr('id'));
+		var addBookDOM = formContainer.find('.btn-add-book');
+		console.log(addBookDOM.attr('id'));
+		addBookDOM.addClass('disabled');
+		reqBookDOM.html('You own the book');
+		reqBookDOM.removeClass('btn-info').addClass('btn-success');
+	    connAddById.close();
+    };
+    connAddById.onerror = function(error){
+	    console.error("Error:"+JSON.stringify(error));
+	    connAddById.close();
+    };
+    connAddById.onclose = function(){
+	    console.log("Add book by volume id. Connection closed");
+    };
+}

@@ -84,12 +84,15 @@ module.exports = function (app, passport, jsdom, fs) {
 								for (var i=0;i<resBookGoogleId.length;i++){
 									$('.books').append(bookTemplate);
 									var mediaContainer = $('.media').last();
+									//mediaContainer.attr('id',resBookISBN13[i]);
 									mediaContainer.find('#book_thumbnail_link').attr('href',resBookThumbnail[i]);
 									mediaContainer.find('#book_thumbnail_img').attr('src',resBookThumbnail[i]);
 									mediaContainer.find('#book_name').html(resBookTitle[i]);
 									mediaContainer.find('#book_isbn13').html(resBookISBN13[i]);
 									mediaContainer.find('#book_googleBookId').html(resBookGoogleId[i]);
 									mediaContainer.find('#book_description').html(resBookDescription[i]);
+									mediaContainer.find('#req-book').attr('id',resBookISBN13[i]);
+									if (isLoggedInBool(req,res)) mediaContainer.find('.btn-req-book').find('div').before('<div class="btn-group" role="group"><button id="'+resBookISBN13[i]+'" class="btn btn-default btn-success btn-add-book" onclick="addBookByVolumeId(this);"><span class="glyphicon glyphicon-plus"></span> Add the book</button></div>');
 								}
 								getBookOwnersFromDB();
 							});
@@ -128,8 +131,11 @@ module.exports = function (app, passport, jsdom, fs) {
 												//console.log(selectBook);
 												var bookOwnerDOM = selectBook.find('#book_owner');
 												bookOwnerDOM.html(bookOwner);
-												var reqBookDOM = selectBook.find('#req-book');
-												if (isLoggedInBool(req,res) && bookOwnerDOM.html() == req.session.user) {
+												var reqBookDOM = selectBook.find('.btn-request-book');
+												var addBookDOM = selectBook.find('.btn-add-book');
+												//if (isLoggedInBool(req,res)) console.log('owner check: '+bookOwner+' ~ '+req.session.passport.user);
+												if (isLoggedInBool(req,res) && bookOwner == req.session.passport.user){
+													addBookDOM.addClass('disabled');
 													reqBookDOM.html('You own the book');
 													reqBookDOM.removeClass('btn-info').addClass('btn-success');
 												}else reqBookDOM.removeClass('disabled');
@@ -148,7 +154,10 @@ module.exports = function (app, passport, jsdom, fs) {
 			});
 		});
 	});
-	app.route('/login').get(function (req, res) {res.sendFile(path + '/public/login.html');});
+	app.route('/login').get(function (req, res) {
+		if (isLoggedInBool(req,res)) res.redirect('/profile');
+		else res.sendFile(path + '/public/login.html');
+	});
 	app.route('/logout').get(function (req, res) {
 		req.logout();
 		res.redirect('/login');
@@ -156,6 +165,7 @@ module.exports = function (app, passport, jsdom, fs) {
 	app.route('/profile').get(isLoggedIn, function (req, res) {
 		console.log('/profile');
 		var bookOwnerIdFilter = req.session.passport.user;
+		//console.log('bookOwnerIdFilter: '+bookOwnerIdFilter);
 		var htmlSourceProfile = null;
 		var bookTemplate = null;
 		fs.readFile(path + "/app/models/book-editable.html","utf-8", function(err,data){
@@ -376,6 +386,85 @@ module.exports = function (app, passport, jsdom, fs) {
 			}).on('error', (e) => {
 				console.log('error: ${e.message}');
 			});
+	    });
+	});
+	app.ws('/addbookbyid', function(ws, res){
+		console.log('/addbookbyid');
+		var authedUserId = ws.upgradeReq.session.passport.user;
+		ws.on('message', function(msg){
+			console.log('add book by isbn: '+msg);
+			Users.find({_id: authedUserId}, function(err, docs) {
+		    	if (err) throw err;
+		    	var userBooks = docs[0].books;
+		    	var apiData = '';
+				var url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:'+msg+'&key='+process.env.GOOGLE_API_SERVER_KEY;
+				https.get(url, (response) => {
+					response.setEncoding('utf-8');
+					response.on('data', (chunk) => {
+						apiData += chunk;
+					});
+					response.on('end', () => {
+						console.log('no more data in response');
+						var json = JSON.parse(apiData);
+						console.log(json);
+						if (json.totalItems > 0){
+							var jsonItem = json.items[0];
+							if (typeof jsonItem.id != 'undefined' &&
+								typeof jsonItem.volumeInfo.title != 'undefined' &&
+								typeof jsonItem.volumeInfo.industryIdentifiers != 'undefined' &&
+								typeof jsonItem.volumeInfo.imageLinks != 'undefined')
+							{
+								var bookAlreadyExists = false;
+								for (var z=0;z<userBooks.length;z++){
+									console.log(userBooks[z].isbn13+' | '+jsonItem.volumeInfo.industryIdentifiers[0].identifier);
+						        	if (userBooks[z].isbn13 == jsonItem.volumeInfo.industryIdentifiers[0].identifier) {
+						        		bookAlreadyExists = true;
+						        		break;
+						        	}
+						        }
+						        console.log('bookAlreadyExists: '+bookAlreadyExists);
+						        if (bookAlreadyExists == true) ws.send('the book you are trying to add already exists',function(err){if (err) throw err;});
+								else{
+									var dateLog = "";
+										var date = new Date();
+										var year = date.getFullYear();
+										var month = date.getMonth()+1;
+										if (month <10) month = "0"+month;
+										var day = date.getDate();
+										var hours = date.getHours();
+										var minutes = date.getMinutes();
+										if (minutes <10) minutes = "0"+minutes;
+										dateLog = year+"-"+month+"-"+day+" "+hours+":"+minutes;
+									userBooks.push({
+										name: jsonItem.volumeInfo.title,
+										isbn13: jsonItem.volumeInfo.industryIdentifiers[0].identifier,
+										googleVolumeId: jsonItem.id,
+										thumbnail: jsonItem.volumeInfo.imageLinks.thumbnail,
+										timestamp: dateLog
+									});
+									console.log('userBooks updated');
+									console.log(userBooks);
+									Users.update({_id:authedUserId}, {$set:{books:userBooks}}, function(err,dt){
+								    	if (err) throw err;
+								        console.log('updated user: '+JSON.stringify(dt));
+					  					ws.send('Success: book added to your collection.'/*+JSON.stringify(userBooks)*/,function(error) {
+									    	if (error) throw error;
+										});
+								    });
+								}
+							}
+						}else ws.send('Google Books API response: not found',function(error) {if (error) throw error;});
+					});
+				}).on('error', (e) => {
+					console.log('error: ${e.message}');
+				});
+	        });
+		});
+		ws.on('close', function() {
+	        console.log('Add book by google volume id: Client disconnected.');
+	    });
+	    ws.on('error', function() {
+	        console.log('Add book by google volume id: ERROR');
 	    });
 	});
 	app.ws('/removebook', function(ws, res){
