@@ -193,8 +193,8 @@ module.exports = function (app, passport, jsdom, fs) {
 					        	$('.books').append('You do not own any books yet.');
 					        }else{
 					        	console.log('at least one book exists');
-					        	console.log(JSON.stringify(userBooks));
-					        	console.log(userBooks.length);
+					        	//console.log(JSON.stringify(userBooks));
+					        	console.log('userBooks length: '+userBooks.length);
 					        	for (var z=0;z<userBooks.length;z++){
 									$('.books').append(bookTemplate);
 									var mediaContainer = $('.media').last();
@@ -209,11 +209,31 @@ module.exports = function (app, passport, jsdom, fs) {
 									if (userInOffers.length == 0){
 										mediaContainer.find('#accept-offer').addClass('disabled');
 										mediaContainer.find('#reject-offer').addClass('disabled');
+									}else{
+										for (var i in userInOffers){
+								        	if (userInOffers[i].completed == false && userInOffers[i].bookISBN == userBooks[z].isbn13){
+								        		console.log(userInOffers[i].bookISBN+' ~ '+userBooks[z].isbn13);
+								        		console.log(userInOffers[i].completed);
+								        		console.log('writing offer');
+								        		var inOfferUnitHTML = "<div class='checkbox'><label><input type='checkbox' value=''>User id"+userInOffers[i].userID+" is interested in buying this book.</label></div>";
+								        		mediaContainer.find('#offer-details').append(inOfferUnitHTML);
+								        	}else{
+								        		mediaContainer.find('#accept-offer').addClass('disabled');
+												mediaContainer.find('#reject-offer').addClass('disabled');
+								        	}
+								        }
 									}
-									for (var i=0;i<userInOffers.length;i++){
-							        	if (userInOffers[i].completed == 'false' && userInOffers[i].isbn13 == userBooks[z].isbn13){
-							        		var offerUnitHTML = "<div class='checkbox'><label><input type='checkbox' value=''>User id"+userInOffers[i].userID+" is interested in buying this book.'</label></div>";
-							        		mediaContainer.find('#offer-details').append(offerUnitHTML);
+								}
+								/*
+								* output offer from authed user to other users
+								*/
+								if (userOutOffers.length > 0){
+									for (var i in userOutOffers){
+							        	if (userOutOffers[i].completed == false){
+							        		console.log(userInOffers[i]);
+							        		console.log('writing offer');
+							        		//var outOfferUnitHTML = "<div class='checkbox'><label><input type='checkbox' value=''>User id"+userInOffers[i].userID+" is interested in buying this book.</label></div>";
+							        		//mediaContainer.find('#offer-details').append(outOfferUnitHTML);
 							        	}
 							        }
 								}
@@ -486,7 +506,7 @@ module.exports = function (app, passport, jsdom, fs) {
 							timestamp: dateLog,
 							completed: false
 				    	});
-				    	/* update fromUser offers for the authed user
+				    	/* update fromUser offers for the authed user */
 				    	Users.update({_id: authedUserId}, {$set:{'offers.fromUser':fromUserOffers}}, function(err,dt){
 					    	if (err) throw err;
 					        console.log('updated user: '+JSON.stringify(dt));
@@ -494,22 +514,22 @@ module.exports = function (app, passport, jsdom, fs) {
 						    	if (err) throw err;
 						    	var toUserOffers = docOwner[0].offers.toUser;
 						    	toUserOffers.push({
-						    		userID: authedUserOwner,
+						    		userID: authedUserId,
 									bookISBN: msg,
 									timestamp: dateLog,
 									completed: false
 						    	});
-						    	Users.update({_id: bookOwner}, {$set:{'offers.toUser':toUserOffers}}, function(err,dt){
+						    	Users.update({_id: bookOwner}, {$set:{'offers.toUser':toUserOffers}}, function(err,dtOwn){
 							    	if (err) throw err;
-							        console.log('updated user: '+JSON.stringify(dt));
+							        console.log('updated user: '+JSON.stringify(dtOwn));
 							        ws.send('book requested by authed user id: '+authedUserId+', offers from user updated: '+JSON.stringify(fromUserOffers)+'\n book owner id: '+bookOwner+', offers to user updated: '+JSON.stringify(toUserOffers),function(error) {
 								    	if (error) throw error;
 									});
 							    });
 					        });
 					    });
-					    */
-				    	ws.send('book requested by authed user id: '+authedUserId+', offers from user updated: '+JSON.stringify(fromUserOffers),function(error) {if (error) throw error;});
+					    
+				    	//ws.send('book requested by authed user id: '+authedUserId+', offers from user updated: '+JSON.stringify(fromUserOffers),function(error) {if (error) throw error;});
 			        });
 		        });
 	        }else ws.send('Error: authentication required',function(error) {if (error) throw error;});
