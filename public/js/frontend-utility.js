@@ -20,12 +20,12 @@ function removeBook(obj){
 	console.log(mediaContainer.attr('id'));
 	var bookISBN13 = mediaContainer.find('#book_isbn13').html();
 	console.log('book removal invoked, isbn13: '+bookISBN13);
-	var connRemove = new WebSocket("wss://book-trading-club-rfprod.c9users.io/removebook");
-    connRemove.onopen = function(){
+	var conRemoveBook = new WebSocket("wss://book-trading-club-rfprod.c9users.io/removebook");
+    conRemoveBook.onopen = function(){
 	    console.log("Removing book. Connection opened");
-	    connRemove.send(bookISBN13);
+	    conRemoveBook.send(bookISBN13);
     }
-    connRemove.onmessage = function(evt){
+    conRemoveBook.onmessage = function(evt){
 	    console.info("Received "+JSON.stringify(evt.data));
 	    mediaContainer.remove();
 	    console.log($('.books').children().length);
@@ -33,13 +33,13 @@ function removeBook(obj){
 	    if ($('.books').children().length == 0) {
 	    	$('.books').html('You do not own any books yet.');
 	    }
-	    connRemove.close();
+	    conRemoveBook.close();
     };
-    connRemove.onerror = function(error){
+    conRemoveBook.onerror = function(error){
 	    console.error("Error:"+JSON.stringify(error));
-	    connRemove.close();
+	    conRemoveBook.close();
     };
-    connRemove.onclose = function(){
+    conRemoveBook.onclose = function(){
 	    console.log("Stock removed. Connection closed");
     };
 }
@@ -54,12 +54,12 @@ function emailSignup(obj){
 	passSignup.parent().attr('class','form-group');
 	passRepeatSignup.parent().attr('class','form-group');
 	console.log('email signup invoked: '+emailSignup.val()+' ~ '+passSignup.val()+' ~ '+passRepeatSignup.val());
-	var connRemove = new WebSocket("wss://book-trading-club-rfprod.c9users.io/emailsignup");
-    connRemove.onopen = function(){
+	var conEmailSignup = new WebSocket("wss://book-trading-club-rfprod.c9users.io/emailsignup");
+    conEmailSignup.onopen = function(){
 	    console.log("Email sign up. Connection opened");
-	    connRemove.send(emailSignup.val()+'|'+passSignup.val()+'|'+passRepeatSignup.val());
+	    conEmailSignup.send(emailSignup.val()+'|'+passSignup.val()+'|'+passRepeatSignup.val());
     }
-    connRemove.onmessage = function(evt){
+    conEmailSignup.onmessage = function(evt){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
 	    if (responseString.indexOf('success') != -1){
@@ -78,13 +78,13 @@ function emailSignup(obj){
 	    	var passMatchDialog = '<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not created</strong> Passwords do not match.</div>';
 			$('#dialog').html(passMatchDialog);
 	    }
-	    connRemove.close();
+	    conEmailSignup.close();
     };
-    connRemove.onerror = function(error){
+    conEmailSignup.onerror = function(error){
 	    console.error("Error:"+JSON.stringify(error));
-	    connRemove.close();
+	    conEmailSignup.close();
     };
-    connRemove.onclose = function(){
+    conEmailSignup.onclose = function(){
 	    console.log("Email sugn up. Connection closed");
     };
 }
@@ -93,12 +93,12 @@ function addBookByVolumeId(obj){
 	var formContainer = $('#'+obj.id).parent().parent().parent();
 	var bookISBN13 = obj.id;
 	console.log('bookISBN13: '+bookISBN13);
-	var connAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/addbookbyisbn");
-    connAddById.onopen = function(){
+	var conAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/addbookbyisbn");
+    conAddById.onopen = function(){
 	    console.log("Add book by volume id. Connection opened");
-	    connAddById.send(bookISBN13);
+	    conAddById.send(bookISBN13);
     }
-    connAddById.onmessage = function(evt){
+    conAddById.onmessage = function(evt){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
 	    alert(responseString);
@@ -112,14 +112,15 @@ function addBookByVolumeId(obj){
 			addBookDOM.addClass('disabled');
 			reqBookDOM.html('You own the book');
 			reqBookDOM.removeClass('btn-info').addClass('btn-success');
+			reqBookDOM.addClass('disabled');
 	    }
-	    connAddById.close();
+	    conAddById.close();
     };
-    connAddById.onerror = function(error){
+    conAddById.onerror = function(error){
 	    console.error("Error:"+JSON.stringify(error));
-	    connAddById.close();
+	    conAddById.close();
     };
-    connAddById.onclose = function(){
+    conAddById.onclose = function(){
 	    console.log("Add book by volume id. Connection closed");
     };
 }
@@ -128,12 +129,12 @@ function requestBook(obj){
 	var formContainer = $('#'+obj.id).parent().parent().parent();
 	var bookISBN13 = obj.id;
 	console.log('bookISBN13: '+bookISBN13);
-	var connAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/requestbook");
-    connAddById.onopen = function(){
+	var conRequestBook = new WebSocket("wss://book-trading-club-rfprod.c9users.io/requestbook");
+    conRequestBook.onopen = function(){
 	    console.log("Add book by isnb13. Connection opened");
-	    connAddById.send(bookISBN13);
+	    conRequestBook.send(bookISBN13);
     }
-    connAddById.onmessage = function(evt){
+    conRequestBook.onmessage = function(evt){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
 	    alert(responseString);
@@ -145,13 +146,13 @@ function requestBook(obj){
 		reqBookDOM.html('You requested the book');
 		reqBookDOM.removeClass('btn-info').addClass('btn-warning');
 		reqBookDOM.addClass('disabled');
-	    connAddById.close();
+	    conRequestBook.close();
     };
-    connAddById.onerror = function(error){
+    conRequestBook.onerror = function(error){
 	    console.error("Error:"+JSON.stringify(error));
-	    connAddById.close();
+	    conRequestBook.close();
     };
-    connAddById.onclose = function(){
+    conRequestBook.onclose = function(){
 	    console.log("Add book by isbn13. Connection closed");
     };
 }
@@ -161,24 +162,61 @@ function cancelRequest(obj){
 	console.log(formContainer);
 	var bookISBN13 = obj.id;
 	console.log('bookISBN13: '+bookISBN13);
-	var connAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/cancelrequest");
-    connAddById.onopen = function(){
+	var conCalcelRequest = new WebSocket("wss://book-trading-club-rfprod.c9users.io/cancelrequest");
+    conCalcelRequest.onopen = function(){
 	    console.log("Cancel book request. Connection opened");
-	    connAddById.send(bookISBN13);
+	    conCalcelRequest.send(bookISBN13);
     }
-    connAddById.onmessage = function(evt){
+    conCalcelRequest.onmessage = function(evt){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
 	    alert(responseString);
 	    formContainer.remove();
 	    $('#profile-out-offers').html(parseInt($('#profile-out-offers').html(),10)-1);
-	    connAddById.close();
+	    conCalcelRequest.close();
     };
-    connAddById.onerror = function(error){
+    conCalcelRequest.onerror = function(error){
 	    console.error("Error:"+JSON.stringify(error));
-	    connAddById.close();
+	    conCalcelRequest.close();
     };
-    connAddById.onclose = function(){
+    conCalcelRequest.onclose = function(){
 	    console.log("Cancel book request. Connection closed");
     };
+}
+function acceptOffer(obj){
+	console.log(obj);
+	var formContainer = $('#'+obj.id).parent().parent().parent();
+	console.log(formContainer);
+	var offersCheckboxes = formContainer.find('input');
+	console.log('offersCheckboxes');
+	console.log(offersCheckboxes);
+	console.log('is checked: '+offersCheckboxes[0].checked);
+	var offerID = null;
+	for (var o in offersCheckboxes){
+		if (offersCheckboxes[o].checked == true) offerID = offersCheckboxes[o].id;
+	}
+	console.log('offerID: '+offerID);
+	if (offerID == null) alert('You must select an incoming offer to perform an action.');
+	else {
+		var conAceptOffer = new WebSocket("wss://book-trading-club-rfprod.c9users.io/acceptoffer");
+	    conAceptOffer.onopen = function(){
+		    console.log("Accept offer. Connection opened");
+		    conAceptOffer.send(offerID);
+	    }
+	    conAceptOffer.onmessage = function(evt){
+	    	var responseString = JSON.stringify(evt.data);
+		    console.info("Received "+responseString);
+		    alert(responseString);
+		    formContainer.remove();
+		    $('#profile-in-offers').html(parseInt($('#profile-in-offers').html(),10)-1);
+		    conAceptOffer.close();
+	    };
+	    conAceptOffer.onerror = function(error){
+		    console.error("Error:"+JSON.stringify(error));
+		    conAceptOffer.close();
+	    };
+	    conAceptOffer.onclose = function(){
+		    console.log("Accept offer. Connection closed");
+	    };
+	}
 }
