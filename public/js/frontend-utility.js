@@ -143,7 +143,7 @@ function requestBook(obj){
 		console.log(addBookDOM.attr('id'));
 		addBookDOM.addClass('disabled');
 		reqBookDOM.html('You requested the book');
-		reqBookDOM.removeClass('btn-info').addClass('btn-success');
+		reqBookDOM.removeClass('btn-info').addClass('btn-warning');
 		reqBookDOM.addClass('disabled');
 	    connAddById.close();
     };

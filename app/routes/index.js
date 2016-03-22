@@ -114,6 +114,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						        	for (var i=0;i<docs.length;i++){
 						        		bookOwner = docs[i]._id.toString();
 						        		var userBooks = docs[i].books;
+						        		var fromUserOffers = docs[i].offers.fromUser;
 										for (var z=0;z<userBooks.length;z++){
 											var bookISBN13index = resBookISBN13.indexOf(userBooks[z].isbn13);
 											if (bookISBN13index != -1) {
@@ -130,6 +131,20 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 													reqBookDOM.removeClass('btn-info').addClass('btn-success');
 													reqBookDOM.addClass('disabled');
 												}else reqBookDOM.removeClass('disabled');
+											}
+										}
+										for (var f in fromUserOffers){
+											var bookISBN13indx = resBookISBN13.indexOf(fromUserOffers[f].bookISBN);
+											if (bookISBN13indx != -1) {
+												var selectBk = booksDOMobjChildren.eq(bookISBN13indx);
+												var reqBkDOM = selectBk.find('.btn-request-book');
+												var addBkDOM = selectBk.find('.btn-add-book');
+												if (isLoggedInBool(req,res) && bookOwner == req.session.passport.user){
+													addBkDOM.addClass('disabled');
+													reqBkDOM.html('You requested the book');
+													reqBkDOM.removeClass('btn-info').addClass('btn-warning');
+													reqBkDOM.addClass('disabled');
+												}
 											}
 										}
 						        	}
