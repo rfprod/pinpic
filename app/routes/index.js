@@ -618,12 +618,14 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 					        Users.find({_id: bookOwner}, function(err, docOwner) {
 						    	if (err) throw err;
 						    	var toUserOffers = docOwner[0].offers.toUser;
-						    	toUserOffers.push({
-						    		userID: authedUserId,
-									bookISBN: msg,
-									timestamp: dateLog,
-									completed: false
-						    	});
+						    	if (!alreadyExists){
+							    	toUserOffers.push({
+							    		userID: authedUserId,
+										bookISBN: msg,
+										timestamp: dateLog,
+										completed: false
+							    	});
+						    	}
 						    	Users.update({_id: bookOwner}, {$set:{'offers.toUser':toUserOffers}}, function(err,dtOwn){
 							    	if (err) throw err;
 							        console.log('updated user: '+JSON.stringify(dtOwn));
