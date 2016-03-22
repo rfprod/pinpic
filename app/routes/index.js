@@ -7,7 +7,7 @@ var clickHandler = new ClickHandler();
 var Users = require('../models/users');
 var https = require('https');
 
-module.exports = function (app, passport, jsdom, fs) {
+module.exports = function (app, passport, jsdom, fs, syncrec) {
 	
 	var jquerySource = fs.readFileSync(path + "/public/js/jquery.min.js", "utf-8");
 	var serializeDocument = jsdom.serializeDocument;
@@ -227,21 +227,59 @@ module.exports = function (app, passport, jsdom, fs) {
 								/*
 								* output offer from authed user to other users
 								*/
-								if (userOutOffers.length > 0){
-									for (var i in userOutOffers){
-							        	if (userOutOffers[i].completed == false){
-							        		console.log(userInOffers[i]);
-							        		console.log('writing offer');
-							        		//var outOfferUnitHTML = "<div class='checkbox'><label><input type='checkbox' value=''>User id"+userInOffers[i].userID+" is interested in buying this book.</label></div>";
-							        		//mediaContainer.find('#offer-details').append(outOfferUnitHTML);
-							        	}
-							        }
-								}
+								var offersTemplate = null;
+								fs.readFile(path + "/app/models/book-request.html","utf-8", function(err,dataOffers){
+									if (err) throw err;
+									offersTemplate = dataOffers;
+									var userOffersContainer = $('div.panel-body');
+									var isbn13Arr = [];
+									if (userOutOffers.length > 0){
+										for (var i in userOutOffers){
+								        	if (userOutOffers[i].completed == false){
+								        		console.log(userOutOffers[i]);
+								        		console.log('writing offer');
+								        		isbn13Arr.push(userOutOffers[i].bookISBN);
+								        		userOffersContainer.html(offersTemplate);
+								        		
+								        		var offersMediaContainer = userOffersContainer.find('.media').last();
+												offersMediaContainer.find('#book_owner').html(userOutOffers[i].userID);
+												offersMediaContainer.find('#book_isbn13').html(userOutOffers[i].bookISBN);
+												offersMediaContainer.find('#book_timestamp').html(userOutOffers[i].timestamp);
+												offersMediaContainer.find('#cancel-req').attr('id','cancel-req-'+userOutOffers[i].bookISBN);
+												
+												var urlBookDetails = 'https://www.googleapis.com/books/v1/volumes?q=isbn:'+userOutOffers[i].bookISBN+'&key='+process.env.GOOGLE_API_SERVER_KEY;
+												var syncRecRes = syncrec('GET', urlBookDetails);
+												var syncRecResBody = JSON.parse(syncRecRes.getBody());
+												var syncRecResBodyItems = syncRecResBody.items[0];
+												console.log('requested book details: '+syncRecResBody);
+												console.log('syncRecResBodyItems: '+syncRecResBodyItems);
+												
+												if (typeof syncRecResBodyItems.id != 'undefined' &&
+													typeof syncRecResBodyItems.volumeInfo.title != 'undefined' &&
+													typeof syncRecResBodyItems.volumeInfo.description != 'undefined' &&
+													typeof syncRecResBodyItems.volumeInfo.industryIdentifiers != 'undefined' &&
+													typeof syncRecResBodyItems.volumeInfo.imageLinks != 'undefined')
+												{
+													offersMediaContainer.find('#book_thumbnail_link').attr('href',syncRecResBodyItems.volumeInfo.imageLinks.thumbnail);
+													offersMediaContainer.find('#book_thumbnail_img').attr('src',syncRecResBodyItems.volumeInfo.imageLinks.thumbnail);
+													offersMediaContainer.find('#book_name').html(syncRecResBodyItems.volumeInfo.title);
+													offersMediaContainer.find('#book_description').html(syncRecResBodyItems.volumeInfo.description);
+												}
+								        	}
+								        }
+									}
+									console.log("index page DOM manipulations complete");
+									newHtml = serializeDocument(window.document);
+									res.send(newHtml);
+									window.close();
+								});
 					        }
+					        /*
 					        console.log("index page DOM manipulations complete");
 							newHtml = serializeDocument(window.document);
 							res.send(newHtml);
 							window.close();
+							*/
 						});
 					}
 				});

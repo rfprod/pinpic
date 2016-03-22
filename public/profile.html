@@ -62,6 +62,20 @@
 						</div>
 					</div>
 					<div class="row">
+						<div class="panel-group" id="accordion">
+							<div class="panel panel-default">
+								<div class="panel-heading" type="button">
+									<h4 class="panel-title">
+										<a aria-expanded="false" class="cllps-toggler collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseZero">My Book Requests</a>
+									</h4>
+								</div>
+								<div style="height: 0px;" aria-expanded="false" id="collapseZero" class="panel-collapse collapse">
+									<div class="panel-body" id="user-requests-data"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
 						<form role="form" action="/addbook/" id="book-adder" class="form-vertical" method="POST" enctype="application/x-www-form-urlencoded">
 		                	<fieldset>
 		    					<legend>Add a Book</legend>

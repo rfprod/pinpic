@@ -7,6 +7,7 @@ var passport = require('passport');
 var session = require('express-session');
 var bodyParser = require('body-parser');
 var jsdom = require("jsdom");
+var syncrec = require('sync-request');
 var fs = require('fs');
 var app = express();
 var expressWs = require('express-ws')(app); //app = express app
@@ -29,7 +30,7 @@ app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 	
-routes(app,passport,jsdom,fs);
+routes(app,passport,jsdom,fs,syncrec);
 
 var port = process.env.PORT || 8080;
 app.listen(port,  function () {

@@ -2,8 +2,8 @@
 .nopadding {padding: 0;}
 body {color:#000000; font-family: 'Play', sans-serif;font-size: 2.2em;overflow-x:hidden;}
 .navbar-brand {font-size: 1em;}
-/*.cllps-toggler {display:block;text-align:center;color:#ffffff;}
-.cllps-toggler:hover {text-decoration:none;}*/
+.cllps-toggler {display:block;text-align:center;color:#ffffff;text-decoration:none;}
+.cllps-toggler:hover {text-decoration:none;}
 .sect {padding-top: 4vh;}
 .books {padding-top: 4vh;}
 #book_thumbnail_img {max-height: 150px; width: auto !important;}
