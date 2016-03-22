@@ -653,16 +653,42 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 			Users.find({_id: authedUserId}, function(err, docs) {
 		    	if (err) throw err;
 		    	var userBooks = docs[0].books;
+		    	var toUserOffers = docs[0].offers.toUser;
 		    	var updatedBooks = [];
-		    	for (var i=0;i<userBooks.length;i++){
+		    	var updatedToUserOffers = [];
+		    	var otherUserProfileIDs = [];
+		    	for (var i in userBooks){
 		    		if (userBooks[i].isbn13 != msg) updatedBooks.push(userBooks[i]);
 		    	}
-		    	Users.update({_id: authedUserId}, {$set:{books:updatedBooks}}, function(err,dt){
+		    	for (var i in toUserOffers){
+		    		if (toUserOffers[i].bookISBN == msg) otherUserProfileIDs.push(toUserOffers[i].userID);
+		    		else updatedToUserOffers.push(toUserOffers[i]);
+		    	}
+		    	console.log('otherUserProfileIDs: '+JSON.stringify(otherUserProfileIDs));
+		    	Users.update({_id: authedUserId}, {$set:{books:updatedBooks, 'offers.toUser':updatedToUserOffers}}, function(err,dt){
 			    	if (err) throw err;
 			        console.log('updated user: '+JSON.stringify(dt));
-			        ws.send('book removed, updated books for the owner: '+JSON.stringify(updatedBooks),function(error) {
-				    	if (error) throw error;
-					});
+			        // remove all offers toUser containing this book; also, remove fromUser offers in other users' profiles who requested the book
+			        var counter = 0;
+			        (function removeFromUserOffer(){
+			        	Users.find({_id: otherUserProfileIDs[counter]}, function(err, dcs) {
+		    				if (err) throw err;
+		    				var fromUserOffers = dcs[0].offers.fromUser;
+		    				var updatedFromUserOffers = [];
+		    				for (var fu in fromUserOffers){
+		    					if (fromUserOffers[fu].bookISBN == msg && fromUserOffers[fu].userID == authedUserId) console.log('removing record');
+		    					else updatedFromUserOffers.push(fromUserOffers[fu]);
+		    				}
+		    				console.log('updatedFromUserOffers: '+JSON.stringify(updatedFromUserOffers));
+				        	Users.update({_id: otherUserProfileIDs[counter]}, {$set:{'offers.fromUser':updatedFromUserOffers}}, function(err,dt){
+						    	if (err) throw err;
+						        console.log('updated user: '+JSON.stringify(dt));
+						        counter++;
+						        if (counter < otherUserProfileIDs.length) removeFromUserOffer();
+						        else ws.send('Success: book removed from current user and from requests in other user profiles.',function(error) {if (error) throw error;});
+						    });
+			        	});
+			        })();
 			    });
 	        });
 		});
