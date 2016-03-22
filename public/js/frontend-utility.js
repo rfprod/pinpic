@@ -102,6 +102,8 @@ function addBookByVolumeId(obj){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
 	    alert(responseString);
+	    var ownersDOM = formContainer.find('#book_owner');
+	    ownersDOM.html(parseInt(ownersDOM.html(),10)+1);
 	    var reqBookDOM = formContainer.find('.btn-request-book');
 	    console.log(reqBookDOM.attr('id'));
 		var addBookDOM = formContainer.find('.btn-add-book');
@@ -133,15 +135,14 @@ function requestBook(obj){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
 	    alert(responseString);
-	    /*
 	    var reqBookDOM = formContainer.find('.btn-request-book');
 	    console.log(reqBookDOM.attr('id'));
 		var addBookDOM = formContainer.find('.btn-add-book');
 		console.log(addBookDOM.attr('id'));
 		addBookDOM.addClass('disabled');
-		reqBookDOM.html('You own the book');
+		reqBookDOM.html('You requested the book');
 		reqBookDOM.removeClass('btn-info').addClass('btn-success');
-		*/
+		reqBookDOM.addClass('disabled');
 	    connAddById.close();
     };
     connAddById.onerror = function(error){
@@ -150,5 +151,32 @@ function requestBook(obj){
     };
     connAddById.onclose = function(){
 	    console.log("Add book by isbn13. Connection closed");
+    };
+}
+function cancelRequest(obj){
+	console.log(obj);
+	var formContainer = $('#'+obj.id).parent().parent().parent();
+	console.log(formContainer);
+	var bookISBN13 = obj.id;
+	console.log('bookISBN13: '+bookISBN13);
+	var connAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/cancelrequest");
+    connAddById.onopen = function(){
+	    console.log("Cancel book request. Connection opened");
+	    connAddById.send(bookISBN13);
+    }
+    connAddById.onmessage = function(evt){
+    	var responseString = JSON.stringify(evt.data);
+	    console.info("Received "+responseString);
+	    alert(responseString);
+	    formContainer.remove();
+	    $('#profile-out-offers').html(parseInt($('#profile-out-offers').html(),10)-1);
+	    connAddById.close();
+    };
+    connAddById.onerror = function(error){
+	    console.error("Error:"+JSON.stringify(error));
+	    connAddById.close();
+    };
+    connAddById.onclose = function(){
+	    console.log("Cancel book request. Connection closed");
     };
 }
