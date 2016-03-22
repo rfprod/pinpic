@@ -102,15 +102,17 @@ function addBookByVolumeId(obj){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
 	    alert(responseString);
-	    var ownersDOM = formContainer.find('#book_owner');
-	    ownersDOM.html(parseInt(ownersDOM.html(),10)+1);
-	    var reqBookDOM = formContainer.find('.btn-request-book');
-	    console.log(reqBookDOM.attr('id'));
-		var addBookDOM = formContainer.find('.btn-add-book');
-		console.log(addBookDOM.attr('id'));
-		addBookDOM.addClass('disabled');
-		reqBookDOM.html('You own the book');
-		reqBookDOM.removeClass('btn-info').addClass('btn-success');
+	    if (responseString.indexOf('not found') == -1){
+		    var ownersDOM = formContainer.find('#book_owner');
+		    ownersDOM.html(parseInt(ownersDOM.html(),10)+1);
+		    var reqBookDOM = formContainer.find('.btn-request-book');
+		    console.log(reqBookDOM.attr('id'));
+			var addBookDOM = formContainer.find('.btn-add-book');
+			console.log(addBookDOM.attr('id'));
+			addBookDOM.addClass('disabled');
+			reqBookDOM.html('You own the book');
+			reqBookDOM.removeClass('btn-info').addClass('btn-success');
+	    }
 	    connAddById.close();
     };
     connAddById.onerror = function(error){

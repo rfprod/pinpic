@@ -267,7 +267,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 												}
 								        	}
 								        }
-									}
+									}else userOffersContainer.html('You have not requested any books yet.');
 									console.log("index page DOM manipulations complete");
 									newHtml = serializeDocument(window.document);
 									res.send(newHtml);
@@ -612,14 +612,11 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						    	Users.update({_id: bookOwner}, {$set:{'offers.toUser':toUserOffers}}, function(err,dtOwn){
 							    	if (err) throw err;
 							        console.log('updated user: '+JSON.stringify(dtOwn));
-							        ws.send('book requested by authed user id: '+authedUserId+', offers from user updated: '+JSON.stringify(fromUserOffers)+'\n book owner id: '+bookOwner+', offers to user updated: '+JSON.stringify(toUserOffers),function(error) {
-								    	if (error) throw error;
-									});
+							        if (alreadyExists) ws.send('Error: book is already requested by you.',function(error) {if (error) throw error;});
+							        else ws.send('Success: book requested, book owner id: '+bookOwner,function(error) {if (error) throw error;});
 							    });
 					        });
 					    });
-					    
-				    	//ws.send('book requested by authed user id: '+authedUserId+', offers from user updated: '+JSON.stringify(fromUserOffers),function(error) {if (error) throw error;});
 			        });
 		        });
 	        }else ws.send('Error: authentication required',function(error) {if (error) throw error;});
@@ -662,12 +659,6 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 	app.ws('/edituser', function(ws, res){
 		console.log('/edituser');
 		var authedUserId = ws.upgradeReq.session.passport.user;
-		//console.log('authed user id: '+authedUserId);
-		/*
-		for(var key in ws.upgradeReq.session.passport){
-	      	console.log(key);
-	   	}
-	   	*/
 		ws.on('message', function(msg){
 			console.log('edit user: '+msg);
 			var wssMsg = msg.split('|');
