@@ -210,7 +210,7 @@ function acceptOffer(obj){
 		    console.info("Received "+responseString);
 		    alert(responseString);
 		    formContainer.remove();
-		    $('#profile-in-offers').html(parseInt($('#profile-in-offers').html(),10)-1);
+		    $('#profile-in-offers').html(parseInt($('#profile-in-offers').html(),10)-offersCheckboxes.length);
 		    conAceptOffer.close();
 	    };
 	    conAceptOffer.onerror = function(error){
@@ -219,6 +219,49 @@ function acceptOffer(obj){
 	    };
 	    conAceptOffer.onclose = function(){
 		    console.log("Accept offer. Connection closed");
+	    };
+	}
+}
+function rejectOffer(obj){
+	console.log(obj);
+	var formContainer = $('#'+obj.id).parent().parent().parent();
+	console.log(formContainer);
+	var offersCheckboxes = formContainer.find('input');
+	console.log('offersCheckboxes');
+	console.log(offersCheckboxes);
+	console.log('is checked: '+offersCheckboxes[0].checked);
+	var offerID = null;
+	for (var o in offersCheckboxes){
+		if (offersCheckboxes[o].checked == true) offerID = offersCheckboxes[o].id;
+	}
+	console.log('offerID: '+offerID);
+	if (offerID == null) alert('You must select an incoming offer to perform an action.');
+	else {
+		var conAceptOffer = new WebSocket("wss://book-trading-club-rfprod.c9users.io/rejectoffer");
+	    conAceptOffer.onopen = function(){
+		    console.log("Reject offer. Connection opened");
+		    conAceptOffer.send(offerID);
+	    }
+	    conAceptOffer.onmessage = function(evt){
+	    	var responseString = JSON.stringify(evt.data);
+		    console.info("Received "+responseString);
+		    alert(responseString);
+		    formContainer.find('#'+offerID).parent().parent().remove();
+		    if (offersCheckboxes.length-1 == 0) {
+		    	formContainer.find('#accept-offer-'+offerID).addClass('disabled');
+		    	formContainer.find('#accept-offer-'+offerID).attr('onclick','');
+		    	formContainer.find('#reject-offer-'+offerID).addClass('disabled');
+		    	formContainer.find('#reject-offer-'+offerID).attr('onclick','');
+		    }
+		    $('#profile-in-offers').html(parseInt($('#profile-in-offers').html(),10)-offersCheckboxes.length);
+		    conAceptOffer.close();
+	    };
+	    conAceptOffer.onerror = function(error){
+		    console.error("Error:"+JSON.stringify(error));
+		    conAceptOffer.close();
+	    };
+	    conAceptOffer.onclose = function(){
+		    console.log("Reject offer. Connection closed");
 	    };
 	}
 }
