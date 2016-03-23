@@ -1,6 +1,6 @@
 $(document).ready(function(){
 	var urlHash = window.location.hash;
-	console.log('url hash: '+urlHash);
+	//console.log('url hash: '+urlHash);
 	if (urlHash == '#already-exists') {
 		$('#dialog').html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not added</strong> You already possess the book you are trying to add.</div>');
 	}else if (urlHash == '#not-found') {
@@ -54,46 +54,56 @@ function emailSignup(obj){
 	console.log(obj);
 	var formContainer = $('#'+obj.id).parent().parent().parent();
 	console.log(formContainer.attr('id'));
+	var emailPattern = /^([a-zA-Z0-9_.-])+@(([a-zA-Z0-9-])+.)+([a-zA-Z0-9]{2,4})+$/;
 	var emailSignup = formContainer.find('#email-signup');
-	var passSignup = formContainer.find('#password-signup');
-	var passRepeatSignup = formContainer.find('#password-repeat-signup');
-	emailSignup.parent().attr('class','form-group');
-	passSignup.parent().attr('class','form-group');
-	passRepeatSignup.parent().attr('class','form-group');
-	console.log('email signup invoked: '+emailSignup.val()+' ~ '+passSignup.val()+' ~ '+passRepeatSignup.val());
-	var conEmailSignup = new WebSocket("wss://book-trading-club-rfprod.c9users.io/emailsignup");
-    conEmailSignup.onopen = function(){
-	    console.log("Email sign up. Connection opened");
-	    conEmailSignup.send(emailSignup.val()+'|'+passSignup.val()+'|'+passRepeatSignup.val());
-    }
-    conEmailSignup.onmessage = function(evt){
-    	var responseString = JSON.stringify(evt.data);
-	    console.info("Received "+responseString);
-	    if (responseString.indexOf('success') != -1){
-	    	emailSignup.attr('value','Email');
-		    passSignup.attr('value','Password');
-		    passRepeatSignup.attr('value','Repeat password');
-		    var successDialog = '<div class="alert alert-success alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Account created</strong> You can now Log In with your registered credentials.</div>';
-			$('#dialog').html(successDialog);
-	    }else if (responseString.indexOf('already exists') != -1){
-		    emailSignup.parent().addClass('has-error').addClass('has-feedback');
-	    	var existsDialog = '<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Already exists</strong> Account associated with this email already exists.</div>';
-			$('#dialog').html(existsDialog);
-	    }else if (responseString.indexOf('do not match') != -1){
-	    	passSignup.parent().addClass('has-error').addClass('has-feedback');
-		    passRepeatSignup.parent().addClass('has-error').addClass('has-feedback');
-	    	var passMatchDialog = '<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not created</strong> Passwords do not match.</div>';
-			$('#dialog').html(passMatchDialog);
+	if (emailPattern.test(emailSignup)){
+		var passSignup = formContainer.find('#password-signup');
+		var passRepeatSignup = formContainer.find('#password-repeat-signup');
+		emailSignup.parent().attr('class','form-group');
+		passSignup.parent().attr('class','form-group');
+		passRepeatSignup.parent().attr('class','form-group');
+		console.log('email signup invoked: '+emailSignup.val()+' ~ '+passSignup.val()+' ~ '+passRepeatSignup.val());
+		var conEmailSignup = new WebSocket("wss://book-trading-club-rfprod.c9users.io/emailsignup");
+	    conEmailSignup.onopen = function(){
+		    console.log("Email sign up. Connection opened");
+		    conEmailSignup.send(emailSignup.val()+'|'+passSignup.val()+'|'+passRepeatSignup.val());
 	    }
-	    conEmailSignup.close();
-    };
-    conEmailSignup.onerror = function(error){
-	    console.error("Error:"+JSON.stringify(error));
-	    conEmailSignup.close();
-    };
-    conEmailSignup.onclose = function(){
-	    console.log("Email sugn up. Connection closed");
-    };
+	    conEmailSignup.onmessage = function(evt){
+	    	var responseString = JSON.stringify(evt.data);
+		    console.info("Received "+responseString);
+		    if (responseString.indexOf('success') != -1){
+		    	emailSignup.attr('value','Email');
+			    passSignup.attr('value','Password');
+			    passRepeatSignup.attr('value','Repeat password');
+			    var successDialog = '<div class="alert alert-success alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Account created</strong> You can now Log In with your registered credentials.</div>';
+				$('#dialog').html(successDialog);
+		    }else if (responseString.indexOf('already exists') != -1){
+			    emailSignup.parent().addClass('has-error').addClass('has-feedback');
+		    	var existsDialog = '<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Already exists</strong> Account associated with this email already exists.</div>';
+				$('#dialog').html(existsDialog);
+		    }else if (responseString.indexOf('do not match') != -1){
+		    	passSignup.parent().addClass('has-error').addClass('has-feedback');
+			    passRepeatSignup.parent().addClass('has-error').addClass('has-feedback');
+		    	var passMatchDialog = '<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not created</strong> Passwords do not match.</div>';
+				$('#dialog').html(passMatchDialog);
+		    }
+		    conEmailSignup.close();
+	    };
+	    conEmailSignup.onerror = function(error){
+		    console.error("Error:"+JSON.stringify(error));
+		    conEmailSignup.close();
+	    };
+	    conEmailSignup.onclose = function(){
+		    console.log("Email sugn up. Connection closed");
+	    };
+	}else {
+		emailSignup.parent().addClass('has-error').addClass('has-feedback');
+		var invalidEmailDialog = '<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not created</strong> Enter a valid email address, please.</div>';
+		$('#dialog').html(invalidEmailDialog);
+		setTimeout(function(){
+		    $('#dialog').html('');
+	    },5000);
+	}
 }
 function addBookByVolumeId(obj){
 	console.log(obj);
