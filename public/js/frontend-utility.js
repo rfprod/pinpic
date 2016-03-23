@@ -138,14 +138,16 @@ function requestBook(obj){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
 	    alert(responseString);
-	    var reqBookDOM = formContainer.find('.btn-request-book');
-	    console.log(reqBookDOM.attr('id'));
-		var addBookDOM = formContainer.find('.btn-add-book');
-		console.log(addBookDOM.attr('id'));
-		addBookDOM.addClass('disabled');
-		reqBookDOM.html('You requested the book');
-		reqBookDOM.removeClass('btn-info').addClass('btn-warning');
-		reqBookDOM.addClass('disabled');
+	    if (responseString.indexOf('Error') == -1){
+		    var reqBookDOM = formContainer.find('.btn-request-book');
+		    console.log(reqBookDOM.attr('id'));
+			var addBookDOM = formContainer.find('.btn-add-book');
+			console.log(addBookDOM.attr('id'));
+			addBookDOM.addClass('disabled');
+			reqBookDOM.html('You requested the book');
+			reqBookDOM.removeClass('btn-info').addClass('btn-warning');
+			reqBookDOM.addClass('disabled');
+	    }
 	    conRequestBook.close();
     };
     conRequestBook.onerror = function(error){

@@ -127,10 +127,16 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 												var addBookDOM = selectBook.find('.btn-add-book');
 												if (isLoggedInBool(req,res) && bookOwner == req.session.passport.user){
 													addBookDOM.addClass('disabled');
+													addBookDOM.attr('onclick','');
 													reqBookDOM.html('You own the book');
 													reqBookDOM.removeClass('btn-info').addClass('btn-success');
 													reqBookDOM.addClass('disabled');
-												}else reqBookDOM.removeClass('disabled');
+													reqBookDOM.attr('onclick','');
+												}else {
+													reqBookDOM.removeClass('disabled');
+													reqBookDOM.attr('onclick','requestBook(this);');
+												}
+												
 											}
 										}
 										for (var f in fromUserOffers){
@@ -141,10 +147,12 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 												var addBkDOM = selectBk.find('.btn-add-book');
 												if (isLoggedInBool(req,res) && bookOwner == req.session.passport.user && fromUserOffers[f].completed == false){
 													addBkDOM.addClass('disabled');
+													addBkDOM.attr('onclick','');
 													reqBkDOM.html('You requested the book');
 													reqBkDOM.removeClass('btn-info').addClass('btn-warning');
 													reqBkDOM.addClass('disabled');
-												}else reqBookDOM.addClass('disabled');
+													reqBkDOM.attr('onclick','');
+												}
 											}
 										}
 						        	}
@@ -238,8 +246,11 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 									mediaContainer.find('#book_timestamp').html(userBooks[z].timestamp);
 									mediaContainer.find('#remove-book').attr('id','remove-book-'+userBooks[z].isbn13);
 									if (userInOffers.length == 0){
+										console.log('userInOffers.length equals zero');
 										mediaContainer.find('#accept-offer').addClass('disabled');
+										mediaContainer.find('#accept-offer').attr('onclick','');
 										mediaContainer.find('#reject-offer').addClass('disabled');
+										mediaContainer.find('#reject-offer').attr('onclick','');
 									}else{
 										console.log('userInOffers: '+JSON.stringify(userInOffers));
 										for (var i in userInOffers){
@@ -251,11 +262,15 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 								        		mediaContainer.find('#offer-details').append(inOfferUnitHTML);
 								        		mediaContainer.find('#accept-offer').attr('id','accept-offer-'+userInOffers[i]._id);
 								        		mediaContainer.find('#reject-offer').attr('id','reject-offer-'+userInOffers[i]._id);
-								        	}else{
-								        		mediaContainer.find('#accept-offer').addClass('disabled');
-												mediaContainer.find('#reject-offer').addClass('disabled');
 								        	}
 								        }
+								        if (mediaContainer.find('input').length > 0) console.log(mediaContainer.id+' contains input');
+							        	else{
+							        		mediaContainer.find('#accept-offer').addClass('disabled');
+							        		mediaContainer.find('#accept-offer').attr('onclick','');
+											mediaContainer.find('#reject-offer').addClass('disabled');
+											mediaContainer.find('#reject-offer').attr('onclick','');
+							        	}
 									}
 								}
 								// output offer from authed user to other users
