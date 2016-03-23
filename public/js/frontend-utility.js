@@ -2,16 +2,23 @@ $(document).ready(function(){
 	var urlHash = window.location.hash;
 	console.log('url hash: '+urlHash);
 	if (urlHash == '#already-exists') {
-		window.location.hash = '';
 		$('#dialog').html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not added</strong> You already possess the book you are trying to add.</div>');
+	}else if (urlHash == '#not-found') {
+		$('#dialog').html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not added</strong> Nothing was found.</div>');
 	}
-	$('#dialog').bind('DOMSubtreeModified', function() {
-	    console.log('tree changed');
-	    if ($('#dialog').html() != ''){
-			setTimeout(function(){
-			    $('#dialog').html('');
-		    },5000);
-		}
+	if (urlHash.length > 0) window.location.hash = '';
+	
+	var dialogChildrenCount = $('#dialog').children().length;
+    if (dialogChildrenCount > 0){
+		setTimeout(function(){
+		    $('#dialog').html('');
+	    },5000);
+	}
+	
+	$('#add-book-name').bind('input', function() {
+	    //console.log($(this).val());
+	    if ($('#add-book-name').val() == '') $('#submit-btn').attr('disabled','disabled');
+		else $('#submit-btn').removeAttr('disabled');
 	});
 });
 function removeBook(obj){
@@ -210,7 +217,7 @@ function acceptOffer(obj){
 		    console.info("Received "+responseString);
 		    alert(responseString);
 		    formContainer.remove();
-		    $('#profile-in-offers').html(parseInt($('#profile-in-offers').html(),10)-offersCheckboxes.length);
+		    $('#profile-in-offers').html(parseInt($('#profile-in-offers').html(),10)-offersCheckboxes.length+1);
 		    conAceptOffer.close();
 	    };
 	    conAceptOffer.onerror = function(error){
