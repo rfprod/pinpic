@@ -139,12 +139,12 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 												var selectBk = booksDOMobjChildren.eq(bookISBN13indx);
 												var reqBkDOM = selectBk.find('.btn-request-book');
 												var addBkDOM = selectBk.find('.btn-add-book');
-												if (isLoggedInBool(req,res) && bookOwner == req.session.passport.user){
+												if (isLoggedInBool(req,res) && bookOwner == req.session.passport.user && fromUserOffers[f].completed == false){
 													addBkDOM.addClass('disabled');
 													reqBkDOM.html('You requested the book');
 													reqBkDOM.removeClass('btn-info').addClass('btn-warning');
 													reqBkDOM.addClass('disabled');
-												}
+												}else reqBookDOM.addClass('disabled');
 											}
 										}
 						        	}
@@ -188,6 +188,19 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						console.log("profile page DOM successfully retrieved");
 						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
 						console.log('getting books data from DB');
+						/*
+						var add = {"_id":"56f2736daee46f4e08b09353","completed":false,"timestamp":"2016-03-23 10:43","bookISBN":"9781449383077","userID":"56ec034c13c627811278b4d4"};
+						var remove = {"_id":"56f183f1ac14245b18f8fd79","completed":false,"timestamp":"2016-03-22 17:42","bookISBN":"0596008570","userID":"56f1813c56a146f3176fef35"};
+						Users.update({_id: bookOwnerIdFilter}, { $pull: {'offers.toUser':remove}}, function(err,dt){
+							if (err) throw err;
+							console.log('removing wrong value: '+JSON.stringify(dt));
+						});
+						Users.update({_id: bookOwnerIdFilter}, { $push: {'offers.toUser':add}}, function(err,dt){
+							if (err) throw err;
+							console.log('adding right value: '+JSON.stringify(dt));
+						});
+						*/
+						//Users.update({_id: bookOwnerIdFilter}, {$set:{'offers.fromUser':[]}}, function(err,dt){if (err) throw err; // init user DB record field
 						Users.find({_id: bookOwnerIdFilter}, function(err, docs) {
 						    if (err) throw err;
 						    var newHtml = null;
@@ -228,6 +241,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 										mediaContainer.find('#accept-offer').addClass('disabled');
 										mediaContainer.find('#reject-offer').addClass('disabled');
 									}else{
+										console.log('userInOffers: '+JSON.stringify(userInOffers));
 										for (var i in userInOffers){
 								        	if (userInOffers[i].completed == false && userInOffers[i].bookISBN == userBooks[z].isbn13){
 								        		console.log(userInOffers[i].bookISBN+' ~ '+userBooks[z].isbn13);
@@ -294,6 +308,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 								});
 					        }
 						});
+						//}); // init user DB record field
 					}
 				});
 			});
@@ -355,77 +370,82 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 			Users.find({_id: authedUserId}, function(err, docs) {
 		    	if (err) throw err;
 		    	var toUserOffers = docs[0].offers.toUser;
+		    	var upToUserOffers = [];
 		    	var requesterID = null, requestedBookISBN = null;
 		    	console.log('fromUserOffers: '+JSON.stringify(toUserOffers));
-		    	for (var i=0;i<toUserOffers.length;i++){
+		    	for (var i in toUserOffers){
 		    		if (toUserOffers[i]._id == msg) {
 		    			toUserOffers[i].completed = true;
+		    			upToUserOffers.push(toUserOffers[i]);
 		    			requesterID = toUserOffers[i].userID;
 		    			requestedBookISBN = toUserOffers[i].bookISBN;
 		    		}
 		    	}
-		    	console.log('updated toUserOffers: '+JSON.stringify(toUserOffers));
-		    	/*
-		    	Users.update({_id: authedUserId}, {$set:{'offers.toUser':toUserOffers}}, function(err,dt){
+		    	console.log('updated toUserOffers: '+JSON.stringify(upToUserOffers));
+		    	//
+		    	Users.update({_id: authedUserId}, {$set:{'offers.toUser':upToUserOffers}}, function(err,dt){
 			    	if (err) throw err;
-			        console.log('updated user: '+JSON.stringify(dt));
-			        */
+			        console.log('updated user '+authedUserId+': '+JSON.stringify(dt));
+			        //
 			    	Users.find({_id: requesterID}, function(err, docs) {
 				    	if (err) throw err;
 				    	var fromUserOffers = docs[0].offers.fromUser;
-				    	console.log('fromUserOffers: '+JSON.stringify(fromUserOffers));
+				    	//console.log('fromUserOffers: '+JSON.stringify(fromUserOffers));
 				    	for (var i=0;i<fromUserOffers.length;i++){
 				    		if (fromUserOffers[i].bookISBN == requestedBookISBN && fromUserOffers[i].userID == authedUserId) fromUserOffers[i].completed = true;
 				    	}
-				    	console.log('updatedFromUserOffers: '+JSON.stringify(fromUserOffers));
+				    	console.log('updated fromUserOffers for user id '+docs[0]._id+': '+JSON.stringify(fromUserOffers));
 				    	//ws.send('Success: offer accepted',function(error) {if (error) throw error;});
-				    	/*
+				    	//
 				    	Users.update({_id: requesterID}, {$set:{'offers.fromUser':fromUserOffers}}, function(err,dt){
 					    	if (err) throw err;
-					        console.log('updated user: '+JSON.stringify(dt));
-					        */
+					        console.log('updated user '+requesterID+': '+JSON.stringify(dt));
+					        //
 				        	Users.find({'offers.fromUser.userID': authedUserId}, function(err, docs) {
 						    	if (err) throw err;
-						    	console.log('find in: '+JSON.stringify(docs));
+						    	//console.log('find in: '+JSON.stringify(docs));
 						    	var whoWantsTheSameBook = [];
 						    	var fromUsersOffersArr = [];
 						    	for (var u in docs){
 						    		whoWantsTheSameBook.push(docs[u]._id);
 						    		fromUsersOffersArr.push(docs[u].offers.fromUser);
 						    	}
+						    	//console.log(fromUsersOffersArr);
 						    	console.log('whoWantsTheSameBook: '+JSON.stringify(whoWantsTheSameBook));
+						    	var cntr = 0;
 						    	if (whoWantsTheSameBook.length > 0){
 							    	(function removeDeadOffers(){
-							    		console.log('removed');
+							    		console.log('removing');
 							    		var updFromUserOffers = [];
-							    		for (var oa in fromUsersOffersArr[0]){
-							    			console.log(fromUsersOffersArr[0][oa]);
-							    			if (fromUsersOffersArr[0][oa].bookISBN == requestedBookISBN && fromUsersOffersArr[0][oa].userID == authedUserId) console.log('removing fromUserOffer');
-							    			else updFromUserOffers.push(fromUsersOffersArr[0][oa]);
+							    		for (var oa in fromUsersOffersArr[cntr]){
+							    			console.log('fromUsersOffersArr[cntr][oa]: '+JSON.stringify(fromUsersOffersArr[cntr][oa]));
+							    			if (fromUsersOffersArr[cntr][oa].bookISBN == requestedBookISBN && fromUsersOffersArr[cntr][oa].userID == authedUserId && whoWantsTheSameBook[cntr] != requesterID) console.log('removing fromUserOffer');
+							    			else updFromUserOffers.push(fromUsersOffersArr[cntr][oa]);
 							    		}
-							    		console.log('updFromUserOffers: '+JSON.stringify(updFromUserOffers));
-										/*
-								    	Users.update({_id: whoWantsTheSameBook[0]}, {$set:{'offers.fromUser':fromUserOffers}}, function(err,dt){
+							    		console.log('updFromUserOffers for user id '+whoWantsTheSameBook[cntr]+': '+JSON.stringify(updFromUserOffers));
+										//
+								    	Users.update({_id: whoWantsTheSameBook[cntr]}, {$set:{'offers.fromUser':updFromUserOffers}}, function(err,dt){
 									    	if (err) throw err;
-									        console.log('updated user: '+JSON.stringify(dt));
-									        ws.send('Success: offer accepted from user id: '+requesterID+'; other offers for this book were rejected automatically.',function(error) {if (error) throw error;});
+									        console.log('updated user '+whoWantsTheSameBook[cntr]+': '+JSON.stringify(dt));
+									        cntr++;
+										    if (cntr < whoWantsTheSameBook.length) removeDeadOffers();
+										    else ws.send('Success: offer accepted from user id: '+requesterID+'; all other offers for this book were rejected automatically.',function(error) {if (error) throw error;});
 									    });
-									    */
-									    whoWantsTheSameBook.shift();
-									    fromUsersOffersArr.shift();
-									    if (whoWantsTheSameBook.length > 0) removeDeadOffers();
-									    else ws.send('Success: offer accepted',function(error) {if (error) throw error;});
+									    //
+									    //cntr++;
+									    //if (cntr < whoWantsTheSameBook.length) removeDeadOffers();
+									    //else ws.send('Success: offer accepted from user id: '+requesterID+'; all other offers for this book were rejected automatically.',function(error) {if (error) throw error;});
 							    	})();
 						    	}else ws.send('Success: offer accepted',function(error) {if (error) throw error;});
 					        });
-					        /*
-					        ws.send('Success: offer accepted from user id: '+requesterID+'; other offers for this book were rejected automatically.',function(error) {if (error) throw error;});
+					        //
+					        //ws.send('Success: offer accepted from user id: '+requesterID+'; other offers for this book were rejected automatically.',function(error) {if (error) throw error;});
 					    });
-					    */
+					    //
 			        });
-			        /*
+			        //
 			    });
-			    */
+			    //
 	        });
 		});
 		ws.on('close', function() {console.log('Remove book: Client disconnected.');});
