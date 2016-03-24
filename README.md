@@ -1,6 +1,6 @@
-# Book Trading Club built on Clementine.js FCC Boilerplate
+# Pinterest-like service built on Clementine.js FCC Boilerplate
 
-[Book Trading Club deployed on c9.io](https://book-trading-club-rfprod.c9users.io/)
+[Pinterest-like service deployed on c9.io](https://pinpincs-rfprod.c9users.io/)
 
 ## Overview
 

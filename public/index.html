@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Book Trading Club</title>
+		<title>PinPic</title>
 		<script src="/public/js/jquery.min.js"></script>
 	    <link href="/public/css/bootstrap.min.css" rel="stylesheet">
 	    <script src="/public/js/bootstrap.min.js"></script>
 		<link href="/public/css/main.css" rel="stylesheet" type="text/css">
+		<script src="/public/js/masonry.pkgd.js"></script>
+		<script src="/public/js/masonry.pkgd.min.js"></script>
 	</head>
 	<body>
 		<div class="container-fluid nopadding"> 
@@ -17,13 +19,13 @@
 		        <span class="icon-bar"></span>
 		        <span class="icon-bar"></span>
 		      </button>
-		      <a class="navbar-brand" href="https://book-trading-club-rfprod.c9users.io/"><span class="glyphicon glyphicon-book"></span> Book Trading Club</a> <a class="navbar-brand hidden-xs" href="https://github.com/rfprod/book-trading-club" target="_blank">GitHub Repo</a>
+		      <a class="navbar-brand" href="https://pinpincs-rfprod.c9users.io/"><span class="glyphicon glyphicon-picture"></span> PinPic</a> <a class="navbar-brand hidden-xs" href="https://github.com/rfprod/pinpic" target="_blank">GitHub Repo</a>
 		    </div>
 		    <div class="collapse navbar-collapse" id="toggle-nav">
 		      <div class="container-fluid"> 
 		        <ul class="nav navbar-nav navbar-right">
-		          	<li class="nav-pills active"><a href="#app"><span class="glyphicon glyphicon-search"></span> All Books</a></li>
-		          	<li class="nav-pills"><a href="/profile"><span class="glyphicon glyphicon-user"></span> My Books</a></li>
+		          	<li class="nav-pills active"><a href="#app"><span class="glyphicon glyphicon-search"></span> All Pics</a></li>
+		          	<li class="nav-pills"><a href="/profile"><span class="glyphicon glyphicon-user"></span> My Pics</a></li>
 		          	<li class="nav-pills"><a href="/logout"><span class="glyphicon glyphicon-remove"></span> Logout</a></li>
 		        </ul>
 		      </div>
@@ -34,7 +36,8 @@
 		    <div class="container-fluid">
 		      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 				<div class="output row books">
-					<div class="alert alert-info alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>User Stories</strong><br>User can view books available via Google Books API. Books can be added to user collection from full catalogue or randomly by typing a name in My Books section. Books claimed to be owned by registered users can be requested by other registered users. User can enter with GitHub credentials or create an account providing a user name and a password. Registered users can edit own email, full name, city, and state.</div>
+					<div class="alert alert-info alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>User Stories</strong><br>An unauthenticated user can login with Twitter or sign up / login with email. An authenticated user can link to images. An authenticated user can delete images that the user has linked to. An authenticated user can see a Pinterest-style wall of all the images the user has linked to. An unauthenticated user can browse other users' walls of images. An authenticated user, if the user uploads an image that is broken, it will be replaced by a placeholder image.
+					</div>
 				</div>
 		      </div>
 		    </div>

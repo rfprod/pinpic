@@ -23,8 +23,8 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 
 	app.route('/').get(function (req, res) {
 		console.log('/');
-		var htmlNavAuthed = "<li class='nav-pills active'><a href='#app'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/profile'><span class='glyphicon glyphicon-user'></span> My Books</a></li><li class='nav-pills'><a href='/logout'><span class='glyphicon glyphicon-remove'></span> Logout</a></li>";
-		var htmlNavNotAuthed = "<li class='nav-pills active'><a href='/'><span class='glyphicon glyphicon-bookmark'></span> All Books</a></li><li class='nav-pills'><a href='/login'><span class='glyphicon glyphicon-user'></span> Sign up / Login</a></li>";
+		var htmlNavAuthed = "<li class='nav-pills active'><a href='#app'><span class='glyphicon glyphicon-pushpin'></span> All Pics</a></li><li class='nav-pills'><a href='/profile'><span class='glyphicon glyphicon-user'></span> My Pics</a></li><li class='nav-pills'><a href='/logout'><span class='glyphicon glyphicon-remove'></span> Logout</a></li>";
+		var htmlNavNotAuthed = "<li class='nav-pills active'><a href='/'><span class='glyphicon glyphicon-pushpin'></span> All Pics</a></li><li class='nav-pills'><a href='/login'><span class='glyphicon glyphicon-user'></span> Sign up / Login</a></li>";
 		var htmlSourceIndex = null;
 		var bookTemplate = null;
 		fs.readFile(path + "/app/models/book.html","utf-8", function(err,data){
@@ -56,7 +56,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 								var jsonItems = json.items;
 								jsonTotalItems = json.totalItems;
 								console.log('jsonTotalItems: '+jsonTotalItems);
-								for (var i=0;i<jsonItems.length-1;i++){
+								for (var i=0;i<jsonItems.length;i++){
 									if (typeof jsonItems[i].id != 'undefined' &&
 										typeof jsonItems[i].volumeInfo.title != 'undefined' &&
 										typeof jsonItems[i].volumeInfo.description != 'undefined' &&
