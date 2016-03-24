@@ -46,7 +46,8 @@ body {color:#000000; font-family: 'Play', sans-serif;font-size: 2.2em;overflow-x
 }
 #url-img {width: 100%; height: auto !important;}
 #img-name {text-transform: uppercase;}
-#owner-link {display: block;}
+#owner-link {display: inline-block;}
+#remove-link {display: inline-block;}
 
 #book_thumbnail_img {max-height: 150px; width: auto !important;}
 #book_extended {font-size: 0.7em;}

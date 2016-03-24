@@ -84,46 +84,38 @@ function emailSignup(obj){
 	}
 }
 function addImageURL(obj){
+	var grid = $('.grid');
 	console.log(obj);
 	var addPicURL = $('#add-pic-url').val();
 	var urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
 	if (urlPattern.test(addPicURL)) {
 		console.log('adding picture url: '+addPicURL);
 		
-	}
-	else alert('Error: please provide a valid url.');
-	/*
-	var conAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/pinpic");
-    conAddById.onopen = function(){
-	    console.log("Pin image by url. Connection opened");
-	    conAddById.send(addPicURL);
-    }
-    conAddById.onmessage = function(evt){
-    	var responseString = JSON.stringify(evt.data);
-	    console.info("Received "+responseString);
-	    alert(responseString);
-	    if (responseString.indexOf('not found') == -1){
-		    var ownersDOM = formContainer.find('#book_owner');
-		    ownersDOM.html(parseInt(ownersDOM.html(),10)+1);
-		    var reqBookDOM = formContainer.find('.btn-request-book');
-		    console.log(reqBookDOM.attr('id'));
-			var addBookDOM = formContainer.find('.btn-add-book');
-			console.log(addBookDOM.attr('id'));
-			addBookDOM.addClass('disabled');
-			reqBookDOM.html('You own the book');
-			reqBookDOM.removeClass('btn-info').addClass('btn-success');
-			reqBookDOM.addClass('disabled');
+		var conAddURL = new WebSocket("wss://pinpincs-rfprod.c9users.io/pinpic");
+	    conAddURL.onopen = function(){
+		    console.log("Pin image by url. Connection opened");
+		    conAddURL.send(addPicURL);
 	    }
-	    conAddById.close();
-    };
-    conAddById.onerror = function(error){
-	    console.error("Error:"+JSON.stringify(error));
-	    conAddById.close();
-    };
-    conAddById.onclose = function(){
-	    console.log("Pin image by url. Connection closed");
-    };
-    */
+	    conAddURL.onmessage = function(evt){
+	    	var responseString = evt.data;
+	    	responseString = responseString.substring(25,responseString.length-14);
+		    console.info("Received "+responseString);
+		    //alert(responseString);
+		    if (responseString.indexOf('Error') == -1){
+			    var profileLinks = $('#profile-links');
+			    profileLinks.html(parseInt(profileLinks.html(),10)+1);
+				grid.append(responseString);
+		    }else alert(responseString);
+		    conAddURL.close();
+	    };
+	    conAddURL.onerror = function(error){
+		    console.error("Error:"+JSON.stringify(error));
+		    conAddURL.close();
+	    };
+	    conAddURL.onclose = function(){
+		    console.log("Pin image by url. Connection closed");
+	    };
+	}else alert('Error: please provide a valid url.');
 }
 function removePin(obj){
 	console.log(obj);

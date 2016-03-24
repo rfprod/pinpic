@@ -129,35 +129,36 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						    if (err) throw err;
 						    var newHtml = null;
 						    console.log(docs);
-						    var userLinks = docs[0].links;
+						    var userPics = docs[0].pics;
+						    console.log(userPics);
 						    var userName = docs[0].userExtended.fullName;
-						    if (typeof userLinks != 'undefined') $('#profile-links').html(userLinks.length);
+						    if (typeof userPics != 'undefined') $('#profile-links').html(userPics.length);
 						    else $('#profile-links').html('0');
 				        	var userExtended = docs[0].userExtended;
 				        	if (typeof userExtended.email != 'undefined' && userExtended.email != '') $('input[id="profile-email"]').attr('value', userExtended.email);
 				        	if (typeof userExtended.fullName != 'undefined' && userExtended.fullName != '') $('input[id="profile-fullname"]').attr('value', userExtended.fullName);
 				        	if (typeof userExtended.city != 'undefined' && userExtended.city != '') $('input[id="profile-city"]').attr('value', userExtended.city);
 				        	if (typeof userExtended.state != 'undefined' && userExtended.state != '') $('input[id="profile-state"]').attr('value', userExtended.state);
-					        if (typeof userLinks == 'undefined') {
+					        if (typeof userPics == 'undefined') {
 					        	console.log('links do not exist');
 					        	$('.grid').html('You have not added any links to images yet.');
-					        }else if (userLinks.length == 0) {
+					        }else if (userPics.length == 0) {
 					        	console.log('links do not exist');
 					        	$('.grid').html('You have not added any links to images yet.');
 					        }else{
 					        	console.log('at least one link exists');
-					        	console.log('userLinks length: '+userLinks.length);
-					        	for (var z in userLinks){
+					        	console.log('userPics length: '+userPics.length);
+					        	for (var z in userPics){
 									$('.grid').append(gridItemTemplate);
 									var gridItemContainer = $('.grid-item').last();
-									gridItemContainer.attr('id','container-'+userLinks[z]._id);
-									gridItemContainer.find('#url-img').attr('src',userLinks[z].url);
-									gridItemContainer.find('#img-name').attr('src',userLinks[z].name);
+									gridItemContainer.attr('id','container-'+userPics[z]._id);
+									gridItemContainer.find('#url-img').attr('src',userPics[z].url);
+									gridItemContainer.find('#img-name').html(userPics[z].name);
 									
 									if (typeof userName != 'undefined') gridItemContainer.find('#owner-link').html(userName);
 									else gridItemContainer.find('#owner-link').html(authedUserId);
-									gridItemContainer.find('#owner-link').attr('https://pinpincs-rfprod.c9users.io/publicprofile/'+authedUserId);
-									gridItemContainer.find('#remove-link').attr('id',userLinks[z]._id);
+									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile/'+authedUserId);
+									gridItemContainer.find('#remove-link').attr('id',userPics[z]._id);
 								}
 					        }
 					        console.log("index page DOM manipulations complete");
@@ -169,6 +170,121 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 				});
 			});
 		});
+	});
+	app.ws('/pinpic', function(ws, res){
+		console.log('/pinpic');
+		var authedUserId = ws.upgradeReq.session.passport.user;
+		ws.on('message', function(msg){
+			console.log('add image url: '+msg);
+			var urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+			if (urlPattern.test(msg)) {
+				var dateLog = "";
+					var date = new Date();
+					var year = date.getFullYear();
+					var month = date.getMonth()+1;
+					if (month <10) month = "0"+month;
+					var day = date.getDate();
+					var hours = date.getHours();
+					var minutes = date.getMinutes();
+					if (minutes <10) minutes = "0"+minutes;
+					dateLog = year+"-"+month+"-"+day+" "+hours+":"+minutes;
+				var linkName = msg;
+				if (linkName.lastIndexOf('/') == linkName.length-1) linkName = linkName.substring(0,linkName.length-1);
+				linkName = linkName.substring(linkName.lastIndexOf('/')+1,linkName.length);
+				var newLink = {
+					url: msg,
+					name: linkName,
+					timestamp: dateLog
+				};
+				console.log('new link obj');
+				console.log(newLink);
+				Users.update({_id:authedUserId}, {$push:{pics:newLink}}, function(err,dt){
+			    	if (err) throw err;
+			        console.log('updated user: '+JSON.stringify(dt));
+					var gridItemTemplate = null;
+					fs.readFile(path + "/app/models/grid-item.html","utf-8", function(err,data){
+						if (err) throw err;
+						gridItemTemplate = data;
+						var newHtml = null;
+						jsdom.env({
+							html: '',
+							src: [jquerySource],
+							done: function (err, window) {
+								if (err) throw err;
+								var $ = window.$;
+								console.log("profile page DOM successfully retrieved");
+								//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
+								$('body').append(gridItemTemplate);
+								var gridItem = $('body').find('.grid-item').last();
+								gridItem.find('#url-img').attr('src',msg);
+								gridItem.find('#img-name').html(linkName);
+								gridItem.find('#owner-link').html(authedUserId);
+								gridItem.find('#owner-link').attr('href',''+authedUserId);
+								//gridItem.find('remove-link')
+								console.log("index page DOM manipulations complete");
+								newHtml = serializeDocument(window.document);
+								ws.send(newHtml,function(error) {if (error) throw error;});
+								window.close();
+							}
+						});
+					});
+			    });
+			}else ws.send('Error: provide a valid url, please.',function(error) {if (error) throw error;});
+		});
+		ws.on('close', function() {console.log('Add book by isbn13: Client disconnected.');});
+	    ws.on('error', function() {console.log('Add book by isbn13: ERROR');});
+	});
+	app.ws('/removepin', function(ws, res){
+		console.log('/removepin');
+		var authedUserId = ws.upgradeReq.session.passport.user;
+		ws.on('message', function(msg){
+			console.log('remove book: '+msg);
+			Users.find({_id: authedUserId}, function(err, docs) {
+		    	if (err) throw err;
+		    	var userBooks = docs[0].books;
+		    	var toUserOffers = docs[0].offers.toUser;
+		    	var updatedBooks = [];
+		    	var updatedToUserOffers = [];
+		    	var otherUserProfileIDs = [];
+		    	for (var i in userBooks){
+		    		if (userBooks[i].isbn13 != msg) updatedBooks.push(userBooks[i]);
+		    	}
+		    	for (var i in toUserOffers){
+		    		if (toUserOffers[i].bookISBN == msg) otherUserProfileIDs.push(toUserOffers[i].userID);
+		    		else updatedToUserOffers.push(toUserOffers[i]);
+		    	}
+		    	console.log('otherUserProfileIDs: '+JSON.stringify(otherUserProfileIDs));
+		    	Users.update({_id: authedUserId}, {$set:{books:updatedBooks, 'offers.toUser':updatedToUserOffers}}, function(err,dt){
+			    	if (err) throw err;
+			        console.log('updated user: '+JSON.stringify(dt));
+			        // remove all offers toUser containing this book; also, remove fromUser offers in other users' profiles who requested the book
+			        if (otherUserProfileIDs.length > 0){
+				        var counter = 0;
+				        (function removeFromUserOffer(){
+				        	Users.find({_id: otherUserProfileIDs[counter]}, function(err, dcs) {
+			    				if (err) throw err;
+			    				var fromUserOffers = dcs[0].offers.fromUser;
+			    				var updatedFromUserOffers = [];
+			    				for (var fu in fromUserOffers){
+			    					if (fromUserOffers[fu].bookISBN == msg && fromUserOffers[fu].userID == authedUserId) console.log('removing record');
+			    					else updatedFromUserOffers.push(fromUserOffers[fu]);
+			    				}
+			    				console.log('updatedFromUserOffers: '+JSON.stringify(updatedFromUserOffers));
+					        	Users.update({_id: otherUserProfileIDs[counter]}, {$set:{'offers.fromUser':updatedFromUserOffers}}, function(err,dt){
+							    	if (err) throw err;
+							        console.log('updated user: '+JSON.stringify(dt));
+							        counter++;
+							        if (counter < otherUserProfileIDs.length) removeFromUserOffer();
+							        else ws.send('Success: book removed from current user and from requests in other user profiles.',function(error) {if (error) throw error;});
+							    });
+				        	});
+				        })();
+		    		}else ws.send('Success: book removed from current user and was not present in other user profiles.',function(error) {if (error) throw error;});
+			    });
+	        });
+		});
+		ws.on('close', function() {console.log('Remove book: Client disconnected.');});
+	    ws.on('error', function() {console.log('Remove book: ERROR');});
 	});
 	
 	app.ws(/emailsignup/, function(ws, res){
@@ -239,133 +355,6 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 		});
 		ws.on('close', function() {console.log('Edit user data: Client disconnected.');});
 	    ws.on('error', function() {console.log('Edit user data: ERROR');});
-	});
-	
-	app.ws('/pinpic', function(ws, res){
-		console.log('/pinpic');
-		var authedUserId = ws.upgradeReq.session.passport.user;
-		ws.on('message', function(msg){
-			console.log('add book by isbn: '+msg);
-			Users.find({_id: authedUserId}, function(err, docs) {
-		    	if (err) throw err;
-		    	var userBooks = docs[0].books;
-		    	var apiData = '';
-				var url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:'+msg+'&key='+process.env.GOOGLE_API_SERVER_KEY;
-				https.get(url, (response) => {
-					response.setEncoding('utf-8');
-					response.on('data', (chunk) => {
-						apiData += chunk;
-					});
-					response.on('end', () => {
-						console.log('no more data in response');
-						var json = JSON.parse(apiData);
-						console.log(json);
-						if (json.totalItems > 0){
-							var jsonItem = json.items[0];
-							if (typeof jsonItem.id != 'undefined' &&
-								typeof jsonItem.volumeInfo.title != 'undefined' &&
-								typeof jsonItem.volumeInfo.industryIdentifiers != 'undefined' &&
-								typeof jsonItem.volumeInfo.imageLinks != 'undefined')
-							{
-								var bookAlreadyExists = false;
-								for (var z=0;z<userBooks.length;z++){
-									console.log(userBooks[z].isbn13+' | '+jsonItem.volumeInfo.industryIdentifiers[0].identifier);
-						        	if (userBooks[z].isbn13 == jsonItem.volumeInfo.industryIdentifiers[0].identifier) {
-						        		bookAlreadyExists = true;
-						        		break;
-						        	}
-						        }
-						        console.log('bookAlreadyExists: '+bookAlreadyExists);
-						        if (bookAlreadyExists == true) ws.send('the book you are trying to add already exists',function(err){if (err) throw err;});
-								else{
-									var dateLog = "";
-										var date = new Date();
-										var year = date.getFullYear();
-										var month = date.getMonth()+1;
-										if (month <10) month = "0"+month;
-										var day = date.getDate();
-										var hours = date.getHours();
-										var minutes = date.getMinutes();
-										if (minutes <10) minutes = "0"+minutes;
-										dateLog = year+"-"+month+"-"+day+" "+hours+":"+minutes;
-									userBooks.push({
-										name: jsonItem.volumeInfo.title,
-										isbn13: jsonItem.volumeInfo.industryIdentifiers[0].identifier,
-										googleVolumeId: jsonItem.id,
-										thumbnail: jsonItem.volumeInfo.imageLinks.thumbnail,
-										timestamp: dateLog
-									});
-									console.log('userBooks updated');
-									console.log(userBooks);
-									Users.update({_id:authedUserId}, {$set:{books:userBooks}}, function(err,dt){
-								    	if (err) throw err;
-								        console.log('updated user: '+JSON.stringify(dt));
-					  					ws.send('Success: book added to your collection.',function(error) {
-									    	if (error) throw error;
-										});
-								    });
-								}
-							}
-						}else ws.send('Google Books API response: not found',function(error) {if (error) throw error;});
-					});
-				}).on('error', (e) => {console.log('error: ${e.message}');});
-	        });
-		});
-		ws.on('close', function() {console.log('Add book by isbn13: Client disconnected.');});
-	    ws.on('error', function() {console.log('Add book by isbn13: ERROR');});
-	});
-
-	app.ws('/removepin', function(ws, res){
-		console.log('/removepin');
-		var authedUserId = ws.upgradeReq.session.passport.user;
-		ws.on('message', function(msg){
-			console.log('remove book: '+msg);
-			Users.find({_id: authedUserId}, function(err, docs) {
-		    	if (err) throw err;
-		    	var userBooks = docs[0].books;
-		    	var toUserOffers = docs[0].offers.toUser;
-		    	var updatedBooks = [];
-		    	var updatedToUserOffers = [];
-		    	var otherUserProfileIDs = [];
-		    	for (var i in userBooks){
-		    		if (userBooks[i].isbn13 != msg) updatedBooks.push(userBooks[i]);
-		    	}
-		    	for (var i in toUserOffers){
-		    		if (toUserOffers[i].bookISBN == msg) otherUserProfileIDs.push(toUserOffers[i].userID);
-		    		else updatedToUserOffers.push(toUserOffers[i]);
-		    	}
-		    	console.log('otherUserProfileIDs: '+JSON.stringify(otherUserProfileIDs));
-		    	Users.update({_id: authedUserId}, {$set:{books:updatedBooks, 'offers.toUser':updatedToUserOffers}}, function(err,dt){
-			    	if (err) throw err;
-			        console.log('updated user: '+JSON.stringify(dt));
-			        // remove all offers toUser containing this book; also, remove fromUser offers in other users' profiles who requested the book
-			        if (otherUserProfileIDs.length > 0){
-				        var counter = 0;
-				        (function removeFromUserOffer(){
-				        	Users.find({_id: otherUserProfileIDs[counter]}, function(err, dcs) {
-			    				if (err) throw err;
-			    				var fromUserOffers = dcs[0].offers.fromUser;
-			    				var updatedFromUserOffers = [];
-			    				for (var fu in fromUserOffers){
-			    					if (fromUserOffers[fu].bookISBN == msg && fromUserOffers[fu].userID == authedUserId) console.log('removing record');
-			    					else updatedFromUserOffers.push(fromUserOffers[fu]);
-			    				}
-			    				console.log('updatedFromUserOffers: '+JSON.stringify(updatedFromUserOffers));
-					        	Users.update({_id: otherUserProfileIDs[counter]}, {$set:{'offers.fromUser':updatedFromUserOffers}}, function(err,dt){
-							    	if (err) throw err;
-							        console.log('updated user: '+JSON.stringify(dt));
-							        counter++;
-							        if (counter < otherUserProfileIDs.length) removeFromUserOffer();
-							        else ws.send('Success: book removed from current user and from requests in other user profiles.',function(error) {if (error) throw error;});
-							    });
-				        	});
-				        })();
-		    		}else ws.send('Success: book removed from current user and was not present in other user profiles.',function(error) {if (error) throw error;});
-			    });
-	        });
-		});
-		ws.on('close', function() {console.log('Remove book: Client disconnected.');});
-	    ws.on('error', function() {console.log('Remove book: ERROR');});
 	});
 	
 	app.route('/api/:id').get(isLoggedIn, function (req, res) {
