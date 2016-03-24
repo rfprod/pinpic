@@ -42,8 +42,7 @@
 						<span class="col-xs-12 col-sm-3 col-md-3 col-lg-2">Username: <span id="profile-username" class="profile-value"></span></span>
 						<span class="col-xs-12 col-sm-3 col-md-3 col-lg-2">Display Name: <span id="display-name" class="profile-value"></span></span>
 						<span class="col-xs-12 col-sm-3 col-md-3 col-lg-2">Repositories: <span id="profile-repos" class="profile-value"></span></span>
-						<span class="col-xs-12 col-sm-6 col-md-6 col-lg-2">My Books: <span id="profile-books" class="profile-value"></span></span>
-						<span class="col-xs-12 col-sm-6 col-md-6 col-lg-2" title="including successfully completed">My Offers: <span class="glyphicon glyphicon glyphicon-arrow-down"></span><span id="profile-in-offers" class="profile-value"></span> / <span class="glyphicon glyphicon glyphicon-arrow-up"></span><span id="profile-out-offers" class="profile-value"></span></span>
+						<span class="col-xs-12 col-sm-6 col-md-6 col-lg-2">My Pics: <span id="profile-links" class="profile-value"></span></span>
 					</div>
 					<div class="row user_extended">
 						<div class="form-group col-xs-12 col-sm-3 col-md-2 col-lg-2">
@@ -64,37 +63,21 @@
 						</div>
 					</div>
 					<div class="row">
-						<div class="panel-group" id="accordion">
-							<div class="panel panel-default">
-								<div class="panel-heading" type="button">
-									<h4 class="panel-title">
-										<a aria-expanded="false" class="cllps-toggler collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseZero">My Book Requests</a>
-									</h4>
-								</div>
-								<div style="height: 0px;" aria-expanded="false" id="collapseZero" class="panel-collapse collapse">
-									<div class="panel-body" id="user-requests-data"></div>
+	                	<fieldset>
+	    					<legend>My Pinned Pics</legend>
+							<div class="form-group">
+		                    	<input type="text" class="form-control" placeholder="Image URL" name="picurl" value="" id="add-pic-url">
+		                    </div>
+						 	<div class="btn-group btn-group-justified" role="group">
+								<div class="btn-group" role="group">
+									<button id="submit-btn" type="submit" class="btn btn-default btn-success btn-add-book" disabled="true"><span class="glyphicon glyphicon-pushpin"></span> Pin a Pic</button>
 								</div>
 							</div>
-						</div>
-					</div>
-					<div class="row">
-						<form role="form" action="/addbook/" id="book-adder" class="form-vertical" method="POST" enctype="application/x-www-form-urlencoded">
-		                	<fieldset>
-		    					<legend>My Books</legend>
-								<div class="form-group">
-			                    	<input type="text" class="form-control" placeholder="Book name" name="bookname" value="" id="add-book-name">
-			                    </div>
-							 	<div class="btn-group btn-group-justified" role="group">
-									<div class="btn-group" role="group">
-										<button id="submit-btn" type="submit" class="btn btn-default btn-success btn-add-book" disabled="true"><span class="glyphicon glyphicon-plus"></span> Add a Book</button>
-									</div>
-								</div>
-							</fieldset>
-						</form>
+						</fieldset>
 					</div>
 					<hr>
 					<div id="dialog"></div>
-					<div class="output row books"></div>
+					<div class="output row grid"></div>
 		        </div>
 		      </div>
 		    </div>

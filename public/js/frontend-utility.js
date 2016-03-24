@@ -15,41 +15,19 @@ $(document).ready(function(){
 	    },5000);
 	}
 	
-	$('#add-book-name').bind('input', function() {
-	    //console.log($(this).val());
-	    if ($('#add-book-name').val() == '') $('#submit-btn').attr('disabled','disabled');
-		else $('#submit-btn').removeAttr('disabled');
-	});
-});
-function removeBook(obj){
-	console.log($('.books').children().length);
-	var mediaContainer = $('#'+obj.id).parent().parent().parent();
-	console.log(mediaContainer.attr('id'));
-	var bookISBN13 = mediaContainer.find('#book_isbn13').html();
-	console.log('book removal invoked, isbn13: '+bookISBN13);
-	var conRemoveBook = new WebSocket("wss://book-trading-club-rfprod.c9users.io/removebook");
-    conRemoveBook.onopen = function(){
-	    console.log("Removing book. Connection opened");
-	    conRemoveBook.send(bookISBN13);
-    }
-    conRemoveBook.onmessage = function(evt){
-	    console.info("Received "+JSON.stringify(evt.data));
-	    mediaContainer.remove();
-	    console.log($('.books').children().length);
-	    $('#profile-books').html($('#profile-books').html()-1);
-	    if ($('.books').children().length == 0) {
-	    	$('.books').html('You do not own any books yet.');
+	$('#add-pic-url').bind('input', function() {
+	    if ($('#add-pic-url').val() == '') {
+	    	$('#submit-btn').attr('disabled','disabled');
+	    	$('#submit-btn').attr('onclick','');
 	    }
-	    conRemoveBook.close();
-    };
-    conRemoveBook.onerror = function(error){
-	    console.error("Error:"+JSON.stringify(error));
-	    conRemoveBook.close();
-    };
-    conRemoveBook.onclose = function(){
-	    console.log("Stock removed. Connection closed");
-    };
-}
+		else {
+			$('#submit-btn').removeAttr('disabled');
+			$('#submit-btn').attr('onclick','addImageURL(this);');
+		}
+	});
+	
+	$('.grid').masonry({itemSelector: '.grid-item', percentPosition: true});
+});
 function emailSignup(obj){
 	console.log(obj);
 	var formContainer = $('#'+obj.id).parent().parent().parent();
@@ -105,15 +83,20 @@ function emailSignup(obj){
 	    },5000);
 	}
 }
-function addBookByVolumeId(obj){
+function addImageURL(obj){
 	console.log(obj);
-	var formContainer = $('#'+obj.id).parent().parent().parent();
-	var bookISBN13 = obj.id;
-	console.log('bookISBN13: '+bookISBN13);
-	var conAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/addbookbyisbn");
+	var addPicURL = $('#add-pic-url').val();
+	var urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+	if (urlPattern.test(addPicURL)) {
+		console.log('adding picture url: '+addPicURL);
+		
+	}
+	else alert('Error: please provide a valid url.');
+	/*
+	var conAddById = new WebSocket("wss://book-trading-club-rfprod.c9users.io/pinpic");
     conAddById.onopen = function(){
-	    console.log("Add book by volume id. Connection opened");
-	    conAddById.send(bookISBN13);
+	    console.log("Pin image by url. Connection opened");
+	    conAddById.send(addPicURL);
     }
     conAddById.onmessage = function(evt){
     	var responseString = JSON.stringify(evt.data);
@@ -138,18 +121,21 @@ function addBookByVolumeId(obj){
 	    conAddById.close();
     };
     conAddById.onclose = function(){
-	    console.log("Add book by volume id. Connection closed");
+	    console.log("Pin image by url. Connection closed");
     };
+    */
 }
-function requestBook(obj){
+function removePin(obj){
 	console.log(obj);
-	var formContainer = $('#'+obj.id).parent().parent().parent();
-	var bookISBN13 = obj.id;
-	console.log('bookISBN13: '+bookISBN13);
-	var conRequestBook = new WebSocket("wss://book-trading-club-rfprod.c9users.io/requestbook");
+	var parentGridItem = $('#'+obj.id).parent();
+	var pinId = obj.id;
+	console.log('removing pin id: '+pinId);
+	parentGridItem.remove();
+	/*
+	var conRequestBook = new WebSocket("wss://book-trading-club-rfprod.c9users.io/removepin");
     conRequestBook.onopen = function(){
-	    console.log("Add book by isnb13. Connection opened");
-	    conRequestBook.send(bookISBN13);
+	    console.log("Remove pin by id. Connection opened");
+	    conRequestBook.send(pinId);
     }
     conRequestBook.onmessage = function(evt){
     	var responseString = JSON.stringify(evt.data);
@@ -172,113 +158,7 @@ function requestBook(obj){
 	    conRequestBook.close();
     };
     conRequestBook.onclose = function(){
-	    console.log("Add book by isbn13. Connection closed");
+	    console.log("Remove pin by id. Connection closed");
     };
-}
-function cancelRequest(obj){
-	console.log(obj);
-	var formContainer = $('#'+obj.id).parent().parent().parent();
-	console.log(formContainer);
-	var bookISBN13 = obj.id;
-	console.log('bookISBN13: '+bookISBN13);
-	var conCalcelRequest = new WebSocket("wss://book-trading-club-rfprod.c9users.io/cancelrequest");
-    conCalcelRequest.onopen = function(){
-	    console.log("Cancel book request. Connection opened");
-	    conCalcelRequest.send(bookISBN13);
-    }
-    conCalcelRequest.onmessage = function(evt){
-    	var responseString = JSON.stringify(evt.data);
-	    console.info("Received "+responseString);
-	    alert(responseString);
-	    formContainer.remove();
-	    $('#profile-out-offers').html(parseInt($('#profile-out-offers').html(),10)-1);
-	    conCalcelRequest.close();
-    };
-    conCalcelRequest.onerror = function(error){
-	    console.error("Error:"+JSON.stringify(error));
-	    conCalcelRequest.close();
-    };
-    conCalcelRequest.onclose = function(){
-	    console.log("Cancel book request. Connection closed");
-    };
-}
-function acceptOffer(obj){
-	console.log(obj);
-	var formContainer = $('#'+obj.id).parent().parent().parent();
-	console.log(formContainer);
-	var offersCheckboxes = formContainer.find('input');
-	console.log('offersCheckboxes');
-	console.log(offersCheckboxes);
-	console.log('is checked: '+offersCheckboxes[0].checked);
-	var offerID = null;
-	for (var o in offersCheckboxes){
-		if (offersCheckboxes[o].checked == true) offerID = offersCheckboxes[o].id;
-	}
-	console.log('offerID: '+offerID);
-	if (offerID == null) alert('You must select an incoming offer to perform an action.');
-	else {
-		var conAceptOffer = new WebSocket("wss://book-trading-club-rfprod.c9users.io/acceptoffer");
-	    conAceptOffer.onopen = function(){
-		    console.log("Accept offer. Connection opened");
-		    conAceptOffer.send(offerID);
-	    }
-	    conAceptOffer.onmessage = function(evt){
-	    	var responseString = JSON.stringify(evt.data);
-		    console.info("Received "+responseString);
-		    alert(responseString);
-		    formContainer.remove();
-		    $('#profile-in-offers').html(parseInt($('#profile-in-offers').html(),10)-offersCheckboxes.length+1);
-		    conAceptOffer.close();
-	    };
-	    conAceptOffer.onerror = function(error){
-		    console.error("Error:"+JSON.stringify(error));
-		    conAceptOffer.close();
-	    };
-	    conAceptOffer.onclose = function(){
-		    console.log("Accept offer. Connection closed");
-	    };
-	}
-}
-function rejectOffer(obj){
-	console.log(obj);
-	var formContainer = $('#'+obj.id).parent().parent().parent();
-	console.log(formContainer);
-	var offersCheckboxes = formContainer.find('input');
-	console.log('offersCheckboxes');
-	console.log(offersCheckboxes);
-	console.log('is checked: '+offersCheckboxes[0].checked);
-	var offerID = null;
-	for (var o in offersCheckboxes){
-		if (offersCheckboxes[o].checked == true) offerID = offersCheckboxes[o].id;
-	}
-	console.log('offerID: '+offerID);
-	if (offerID == null) alert('You must select an incoming offer to perform an action.');
-	else {
-		var conAceptOffer = new WebSocket("wss://book-trading-club-rfprod.c9users.io/rejectoffer");
-	    conAceptOffer.onopen = function(){
-		    console.log("Reject offer. Connection opened");
-		    conAceptOffer.send(offerID);
-	    }
-	    conAceptOffer.onmessage = function(evt){
-	    	var responseString = JSON.stringify(evt.data);
-		    console.info("Received "+responseString);
-		    alert(responseString);
-		    formContainer.find('#'+offerID).parent().parent().remove();
-		    if (offersCheckboxes.length-1 == 0) {
-		    	formContainer.find('#accept-offer-'+offerID).addClass('disabled');
-		    	formContainer.find('#accept-offer-'+offerID).attr('onclick','');
-		    	formContainer.find('#reject-offer-'+offerID).addClass('disabled');
-		    	formContainer.find('#reject-offer-'+offerID).attr('onclick','');
-		    }
-		    $('#profile-in-offers').html(parseInt($('#profile-in-offers').html(),10)-offersCheckboxes.length);
-		    conAceptOffer.close();
-	    };
-	    conAceptOffer.onerror = function(error){
-		    console.error("Error:"+JSON.stringify(error));
-		    conAceptOffer.close();
-	    };
-	    conAceptOffer.onclose = function(){
-		    console.log("Reject offer. Connection closed");
-	    };
-	}
+    */
 }

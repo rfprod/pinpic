@@ -20,27 +20,11 @@ var User = new Schema({
 	nbrClicks: {
 	    clicks: Number 
 	},
-	books: [{
+	pics: [{
+		url: String,
 		name: String,
-		isbn13: String,
-		googleVolumeId: String,
-		thumbnail: String,
 		timestamp: String
-	}],
-	offers: {
-		toUser: [{
-			userID: String,
-			bookISBN: String,
-			timestamp: String,
-			completed: Boolean
-		}],
-		fromUser: [{
-			userID: String,
-			bookISBN: String,
-			timestamp: String,
-			completed: Boolean
-		}]
-	}
+	}]
 });
 
 module.exports = mongoose.model('User', User);
