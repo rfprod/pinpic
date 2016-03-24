@@ -1,6 +1,5 @@
 $(document).ready(function(){
 	var urlHash = window.location.hash;
-	//console.log('url hash: '+urlHash);
 	if (urlHash == '#already-exists') {
 		$('#dialog').html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><strong>Not added</strong> You already possess the book you are trying to add.</div>');
 	}else if (urlHash == '#not-found') {
@@ -87,11 +86,9 @@ function addImageURL(obj){
 	var grid = $('.grid');
 	console.log(obj);
 	var addPicURL = $('#add-pic-url').val();
-	var httpsPattern = /^https?$/;
 	var urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
 	if (urlPattern.test(addPicURL)) {
 		console.log('adding picture url: '+addPicURL);
-		
 		var conAddURL = new WebSocket("wss://pinpincs-rfprod.c9users.io/pinpic");
 	    conAddURL.onopen = function(){
 		    console.log("Pin image by url. Connection opened");
@@ -101,12 +98,11 @@ function addImageURL(obj){
 	    	var responseString = evt.data;
 	    	responseString = responseString.substring(25,responseString.length-14);
 		    console.info("Received "+responseString);
-		    //alert(responseString);
 		    if (responseString.indexOf('Error') == -1){
 			    var profileLinks = $('#profile-links');
 			    profileLinks.html(parseInt(profileLinks.html(),10)+1);
-				grid.append(responseString);
-				if (!httpsPattern.test(addPicURL)) location.reload();
+			    var $resObj = $(responseString);
+				grid.append($resObj).masonry('appended', $resObj);
 		    }else alert(responseString);
 		    conAddURL.close();
 	    };
@@ -124,9 +120,7 @@ function removePin(obj){
 	var parentGridItem = $('#'+obj.id).parent();
 	var pinId = obj.id;
 	console.log('removing pin id: '+pinId);
-	parentGridItem.remove();
-	/*
-	var conRequestBook = new WebSocket("wss://book-trading-club-rfprod.c9users.io/removepin");
+	var conRequestBook = new WebSocket("wss://pinpincs-rfprod.c9users.io/removepin");
     conRequestBook.onopen = function(){
 	    console.log("Remove pin by id. Connection opened");
 	    conRequestBook.send(pinId);
@@ -134,17 +128,14 @@ function removePin(obj){
     conRequestBook.onmessage = function(evt){
     	var responseString = JSON.stringify(evt.data);
 	    console.info("Received "+responseString);
-	    alert(responseString);
 	    if (responseString.indexOf('Error') == -1){
-		    var reqBookDOM = formContainer.find('.btn-request-book');
-		    console.log(reqBookDOM.attr('id'));
-			var addBookDOM = formContainer.find('.btn-add-book');
-			console.log(addBookDOM.attr('id'));
-			addBookDOM.addClass('disabled');
-			reqBookDOM.html('You requested the book');
-			reqBookDOM.removeClass('btn-info').addClass('btn-warning');
-			reqBookDOM.addClass('disabled');
-	    }
+		    var profileLinks = $('#profile-links');
+		    profileLinks.html(parseInt(profileLinks.html(),10)-1);
+		    $('.grid').masonry('remove',parentGridItem);
+		    setTimeout(function(){
+			    $('#dialog').html('');
+		    },5000);
+	    }else alert(responseString);
 	    conRequestBook.close();
     };
     conRequestBook.onerror = function(error){
@@ -154,5 +145,4 @@ function removePin(obj){
     conRequestBook.onclose = function(){
 	    console.log("Remove pin by id. Connection closed");
     };
-    */
 }

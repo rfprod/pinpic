@@ -48,11 +48,6 @@ body {color:#000000; font-family: 'Play', sans-serif;font-size: 2.2em;overflow-x
 #img-name {text-transform: uppercase;}
 #owner-link {display: inline-block;}
 #remove-link {display: inline-block;}
-
-#book_thumbnail_img {max-height: 150px; width: auto !important;}
-#book_extended {font-size: 0.7em;}
-#book_description {font-size: 0.75em;}
-.btn-req-book {margin-top: 0.5em;}
 p {margin-top:0.5vh;}
 .credits {display:block;text-align:center;font-size:0.75em;}
 .credits a:hover {text-decoration:none;}
@@ -61,7 +56,6 @@ p {margin-top:0.5vh;}
 .done {display:none;}
 .user_extended {margin-top:2vh;}
 #user_instructions {color: #ff0000;}
-.checkbox {text-align: left;}
 .btn-toolbar {text-align:center;width:auto;max-width:100%;}
 .btn-edit-user-extended {width:100%;}
 #email-auth {margin-top:2vh;}

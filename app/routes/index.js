@@ -110,16 +110,6 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						console.log("profile page DOM successfully retrieved");
 						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
 						console.log('getting books data from DB');
-						/* replace values
-						var add = {"_id":"56f2736daee46f4e08b09353","completed":false,"timestamp":"2016-03-23 10:43","bookISBN":"9781449383077","userID":"56ec034c13c627811278b4d4"};
-						var remove = {"_id":"56f183f1ac14245b18f8fd79","completed":false,"timestamp":"2016-03-22 17:42","bookISBN":"0596008570","userID":"56f1813c56a146f3176fef35"};
-						Users.update({_id: authedUserId}, { $pull: {'offers.toUser':remove}}, function(err,dt){if (err) throw err;console.log('removing value: '+JSON.stringify(dt));});
-						Users.update({_id: authedUserId}, { $push: {'offers.toUser':add}}, function(err,dt){if (err) throw err;console.log('adding value: '+JSON.stringify(dt));});
-						*/
-						/* init offers
-						Users.update({_id: authedUserId}, { $set: {'offers.toUser':[]}}, function(err,dt){if (err) throw err;console.log('init in offers: '+JSON.stringify(dt));});
-						Users.update({_id: authedUserId}, { $set: {'offers.fromUser':[]}}, function(err,dt){if (err) throw err;console.log('init out offers: '+JSON.stringify(dt));});
-						*/
 						Users.find({_id: authedUserId}, function(err, docs) {
 						    if (err) throw err;
 						    var newHtml = null;
@@ -230,50 +220,12 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 		console.log('/removepin');
 		var authedUserId = ws.upgradeReq.session.passport.user;
 		ws.on('message', function(msg){
-			console.log('remove book: '+msg);
-			Users.find({_id: authedUserId}, function(err, docs) {
+			console.log('remove pinned image by id : '+msg);
+	    	Users.update({_id: authedUserId}, {$pull:{pics:{_id:msg}}}, function(err,dt){
 		    	if (err) throw err;
-		    	var userBooks = docs[0].books;
-		    	var toUserOffers = docs[0].offers.toUser;
-		    	var updatedBooks = [];
-		    	var updatedToUserOffers = [];
-		    	var otherUserProfileIDs = [];
-		    	for (var i in userBooks){
-		    		if (userBooks[i].isbn13 != msg) updatedBooks.push(userBooks[i]);
-		    	}
-		    	for (var i in toUserOffers){
-		    		if (toUserOffers[i].bookISBN == msg) otherUserProfileIDs.push(toUserOffers[i].userID);
-		    		else updatedToUserOffers.push(toUserOffers[i]);
-		    	}
-		    	console.log('otherUserProfileIDs: '+JSON.stringify(otherUserProfileIDs));
-		    	Users.update({_id: authedUserId}, {$set:{books:updatedBooks, 'offers.toUser':updatedToUserOffers}}, function(err,dt){
-			    	if (err) throw err;
-			        console.log('updated user: '+JSON.stringify(dt));
-			        // remove all offers toUser containing this book; also, remove fromUser offers in other users' profiles who requested the book
-			        if (otherUserProfileIDs.length > 0){
-				        var counter = 0;
-				        (function removeFromUserOffer(){
-				        	Users.find({_id: otherUserProfileIDs[counter]}, function(err, dcs) {
-			    				if (err) throw err;
-			    				var fromUserOffers = dcs[0].offers.fromUser;
-			    				var updatedFromUserOffers = [];
-			    				for (var fu in fromUserOffers){
-			    					if (fromUserOffers[fu].bookISBN == msg && fromUserOffers[fu].userID == authedUserId) console.log('removing record');
-			    					else updatedFromUserOffers.push(fromUserOffers[fu]);
-			    				}
-			    				console.log('updatedFromUserOffers: '+JSON.stringify(updatedFromUserOffers));
-					        	Users.update({_id: otherUserProfileIDs[counter]}, {$set:{'offers.fromUser':updatedFromUserOffers}}, function(err,dt){
-							    	if (err) throw err;
-							        console.log('updated user: '+JSON.stringify(dt));
-							        counter++;
-							        if (counter < otherUserProfileIDs.length) removeFromUserOffer();
-							        else ws.send('Success: book removed from current user and from requests in other user profiles.',function(error) {if (error) throw error;});
-							    });
-				        	});
-				        })();
-		    		}else ws.send('Success: book removed from current user and was not present in other user profiles.',function(error) {if (error) throw error;});
-			    });
-	        });
+		        console.log('updated user pics: '+JSON.stringify(dt));
+		        ws.send('Success: image link was removed from current user collection.',function(error) {if (error) throw error;});
+		    });
 		});
 		ws.on('close', function() {console.log('Remove book: Client disconnected.');});
 	    ws.on('error', function() {console.log('Remove book: ERROR');});
@@ -347,6 +299,74 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 		});
 		ws.on('close', function() {console.log('Edit user data: Client disconnected.');});
 	    ws.on('error', function() {console.log('Edit user data: ERROR');});
+	});
+	
+	app.route(new RegExp(/\/publicprofile\/?/)).get(function (req, res) {
+		console.log('/publicprofile');
+		var userId = '56f3eab22bebbdcc1516bdb4';
+		console.log(req.url);
+		var htmlSourceIndex = null;
+		var gridItemTemplate = null;
+		fs.readFile(path + "/app/models/grid-item.html","utf-8", function(err,data){
+			if (err) throw err;
+			gridItemTemplate = data;
+			fs.readFile(path + "/public/index.html", "utf-8", function (err,data) {
+				if (err) throw err;
+			  	htmlSourceIndex = data;
+			  	jsdom.env({
+					html: htmlSourceIndex,
+					src: [jquerySource],
+					done: function (err, window) {
+						if (err) throw err;
+						var $ = window.$;
+						console.log("profile page DOM successfully retrieved");
+						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
+						console.log('getting books data from DB');
+						Users.find({_id: userId}, function(err, docs) {
+						    if (err) throw err;
+						    var newHtml = null;
+						    console.log(docs);
+						    var userPics = docs[0].pics;
+						    console.log(userPics);
+						    if (typeof userPics != 'undefined') $('#profile-links').html(userPics.length);
+						    else $('#profile-links').html('0');
+						    $('li.active').removeClass('active');
+						    $('.alert-dismissible').remove();
+						    $('#username').html('User <code>id '+userId+'</code> Public Profile');
+				        	var userExtended = docs[0].userExtended;
+				        	if (typeof userExtended.email != 'undefined' && userExtended.email != '') $('input[id="profile-email"]').attr('value', userExtended.email);
+				        	if (typeof userExtended.fullName != 'undefined' && userExtended.fullName != '') $('input[id="profile-fullname"]').attr('value', userExtended.fullName);
+				        	if (typeof userExtended.city != 'undefined' && userExtended.city != '') $('input[id="profile-city"]').attr('value', userExtended.city);
+				        	if (typeof userExtended.state != 'undefined' && userExtended.state != '') $('input[id="profile-state"]').attr('value', userExtended.state);
+					        if (typeof userPics == 'undefined') {
+					        	console.log('links do not exist');
+					        	$('.grid').html('You have not added any links to images yet.');
+					        }else if (userPics.length == 0) {
+					        	console.log('links do not exist');
+					        	$('.grid').html('You have not added any links to images yet.');
+					        }else{
+					        	console.log('at least one link exists');
+					        	console.log('userPics length: '+userPics.length);
+					        	for (var z in userPics){
+									$('.grid').append(gridItemTemplate);
+									var gridItemContainer = $('.grid-item').last();
+									gridItemContainer.attr('id','container-'+userPics[z]._id);
+									gridItemContainer.find('#url-img').attr('src',userPics[z].url);
+									gridItemContainer.find('#img-name').html(userPics[z].name);
+									gridItemContainer.find('#owner-link').html(userId);
+									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile/'+userId);
+									gridItemContainer.find('#remove-link').attr('id',userPics[z]._id);
+								}
+					        }
+					        console.log("index page DOM manipulations complete");
+							newHtml = serializeDocument(window.document);
+							res.send(newHtml);
+							window.close();
+						});
+					}
+				});
+			});
+		});
 	});
 	
 	app.route('/api/:id').get(isLoggedIn, function (req, res) {
