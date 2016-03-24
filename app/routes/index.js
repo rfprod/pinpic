@@ -49,30 +49,25 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						    console.log(docs);
 						    for (var i in docs){
 							    var userId = docs[i]._id;
-							    var userLinks = docs[i].links;
-							    var userName = null;
-							    if (typeof docs[i].userExtended != 'undefined') if (typeof docs[i].userExtended.fullName != 'undefined') userName = docs[i].userExtended.fullName;
-							    else userName = docs[i]._id;
-							    if (typeof userLinks != 'undefined') $('#profile-links').html(userLinks.length);
+							    var userPics = docs[i].pics;
+							    if (typeof userPics != 'undefined') $('#profile-links').html(userPics.length);
 							    else $('#profile-links').html('0');
-						        if (typeof userLinks == 'undefined') {
+						        if (typeof userPics == 'undefined') {
 						        	console.log('links do not exist for user: '+userId);
-						        }else if (userLinks.length == 0) {
+						        }else if (userPics.length == 0) {
 						        	console.log('links do not exist for user: '+userId);
 						        }else{
 						        	console.log('at least one link exists for user: '+userId);
-						        	console.log('userLinks length: '+userLinks.length);
-						        	for (var z in userLinks){
+						        	console.log('userPics length: '+userPics.length);
+						        	for (var z in userPics){
 										$('.grid').append(gridItemTemplate);
 										var gridItemContainer = $('.grid-item').last();
-										gridItemContainer.attr('id',userLinks[z]._id);
-										gridItemContainer.find('#url-img').attr('src',userLinks[z].url);
-										gridItemContainer.find('#img-name').attr('src',userLinks[z].name);
-										
-										if (typeof userName != 'undefined') gridItemContainer.find('#owner-link').html(userName);
-										else gridItemContainer.find('#owner-link').html(userId);
-										gridItemContainer.find('#owner-link').attr('https://pinpincs-rfprod.c9users.io/publicprofile/'+userId);
-										gridItemContainer.find('#remove-link').attr('id','remove-link-'+userLinks[z]._id);
+										gridItemContainer.attr('id',userPics[z]._id);
+										gridItemContainer.find('#url-img').attr('src',userPics[z].url);
+										gridItemContainer.find('#img-name').html(userPics[z].name);
+										gridItemContainer.find('#owner-link').html(userId.toString());
+										gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile/'+userId);
+										gridItemContainer.find('#remove-link').remove();
 									}
 						        }
 						    }
@@ -131,7 +126,6 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						    console.log(docs);
 						    var userPics = docs[0].pics;
 						    console.log(userPics);
-						    var userName = docs[0].userExtended.fullName;
 						    if (typeof userPics != 'undefined') $('#profile-links').html(userPics.length);
 						    else $('#profile-links').html('0');
 				        	var userExtended = docs[0].userExtended;
@@ -154,9 +148,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 									gridItemContainer.attr('id','container-'+userPics[z]._id);
 									gridItemContainer.find('#url-img').attr('src',userPics[z].url);
 									gridItemContainer.find('#img-name').html(userPics[z].name);
-									
-									if (typeof userName != 'undefined') gridItemContainer.find('#owner-link').html(userName);
-									else gridItemContainer.find('#owner-link').html(authedUserId);
+									gridItemContainer.find('#owner-link').html(authedUserId);
 									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile/'+authedUserId);
 									gridItemContainer.find('#remove-link').attr('id',userPics[z]._id);
 								}

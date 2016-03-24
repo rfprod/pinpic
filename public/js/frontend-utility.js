@@ -87,6 +87,7 @@ function addImageURL(obj){
 	var grid = $('.grid');
 	console.log(obj);
 	var addPicURL = $('#add-pic-url').val();
+	var httpsPattern = /^https?$/;
 	var urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
 	if (urlPattern.test(addPicURL)) {
 		console.log('adding picture url: '+addPicURL);
@@ -105,6 +106,7 @@ function addImageURL(obj){
 			    var profileLinks = $('#profile-links');
 			    profileLinks.html(parseInt(profileLinks.html(),10)+1);
 				grid.append(responseString);
+				if (!httpsPattern.test(addPicURL)) location.reload();
 		    }else alert(responseString);
 		    conAddURL.close();
 	    };
