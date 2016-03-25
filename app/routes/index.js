@@ -301,7 +301,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 	    ws.on('error', function() {console.log('Edit user data: ERROR');});
 	});
 	
-	app.route(new RegExp(/\/publicprofile\/?/)).get(function (req, res) {
+	app.route(new RegExp(/\/publicprofile\/[a-z0-9]{24}/)).get(function (req, res) {
 		console.log('/publicprofile');
 		var userId = '56f3eab22bebbdcc1516bdb4';
 		console.log(req.url);

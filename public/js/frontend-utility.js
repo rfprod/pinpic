@@ -13,7 +13,6 @@ $(document).ready(function(){
 		    $('#dialog').html('');
 	    },5000);
 	}
-	
 	$('#add-pic-url').bind('input', function() {
 	    if ($('#add-pic-url').val() == '') {
 	    	$('#submit-btn').attr('disabled','disabled');
@@ -24,8 +23,19 @@ $(document).ready(function(){
 			$('#submit-btn').attr('onclick','addImageURL(this);');
 		}
 	});
-	
 	$('.grid').masonry({itemSelector: '.grid-item', percentPosition: true});
+	console.log($('.grid').find('img'));
+	$('.grid').find('img').each(function(){
+		$(this).on("error", function () {
+			console.log('error loading '+$(this).parent().attr('id')+' | '+$(this).parent());
+			var height = $(this).height();
+			var width = $(this).width();
+			console.log('replacing image with dimensions: '+width+'/'+height);
+			$(this).attr('src','');
+			$(this).attr('data-src','holder.js/'+width+'x'+height+'?text=Broken');
+			//$('.grid').masonry('reloadItems');
+		});
+	});
 });
 function emailSignup(obj){
 	console.log(obj);
