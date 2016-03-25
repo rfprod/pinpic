@@ -111,7 +111,9 @@ function addImageURL(obj){
 			    var profileLinks = $('#profile-links');
 			    profileLinks.html(parseInt(profileLinks.html(),10)+1);
 			    var $resObj = $(responseString);
+			    if (grid.find('img').length == 0) grid.html('');
 				grid.append($resObj).masonry('appended', $resObj);
+				$('.grid').masonry({itemSelector: '.grid-item', percentPosition: true});
 		    }else alert(responseString);
 		    conAddURL.close();
 	    };
@@ -140,10 +142,12 @@ function removePin(obj){
 	    if (responseString.indexOf('Error') == -1){
 		    var profileLinks = $('#profile-links');
 		    profileLinks.html(parseInt(profileLinks.html(),10)-1);
-		    $('.grid').masonry('remove',parentGridItem);
-		    setTimeout(function(){
-			    $('#dialog').html('');
-		    },5000);
+		    var grid = $('.grid');
+		    grid.masonry('remove',parentGridItem);
+		    var $resObj = '<p>You do not have any links added.</p>';
+		    console.log(grid.children().length);
+		    if (grid.find('img').length == 1) grid.append($resObj).masonry('appended', $resObj).masonry('reloadItems');
+		    $('.grid').masonry({itemSelector: '.grid-item', percentPosition: true});
 	    }else alert(responseString);
 	    conRequestBook.close();
     };

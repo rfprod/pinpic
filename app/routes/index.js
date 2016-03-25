@@ -128,6 +128,10 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						    }else{
 						    	$('#gh-logo').remove();
 						    	$('#twtr-logo').remove();
+						    	$('#profile-id').parent().remove();
+						    	$('#profile-username').parent().remove();
+						    	$('#profile-name').parent().remove();
+						    	$('#display-name').parent().remove();
 						    	$('#profile-repos').parent().remove();
 						    }
 				        	var userExtended = docs[0].userExtended;
@@ -214,11 +218,19 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 								gridItem.find('#img-name').html(linkName);
 								gridItem.find('#owner-link').html(authedUserId);
 								gridItem.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile-'+authedUserId);
-								//gridItem.find('remove-link')
-								console.log("index page DOM manipulations complete");
-								newHtml = serializeDocument(window.document);
-								ws.send(newHtml,function(error) {if (error) throw error;});
-								window.close();
+								var picId = null;
+								Users.find({_id:authedUserId}, function(err, docs) {
+									if (err) throw err;
+								    for (var y in docs[0].pics){
+								    	if (docs[0].pics[y].url == msg && docs[0].pics[y].timestamp == dateLog) picId = docs[0].pics[y]._id;
+								    }
+								    gridItem.find('#remove-link').attr('id',picId);
+									//gridItem.find('remove-link')
+									console.log("index page DOM manipulations complete");
+									newHtml = serializeDocument(window.document);
+									ws.send(newHtml,function(error) {if (error) throw error;});
+									window.close();
+								});
 							}
 						});
 					});
