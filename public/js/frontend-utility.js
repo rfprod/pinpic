@@ -39,17 +39,17 @@ $(document).ready(function(){
 function emailSignup(obj){
 	console.log(obj);
 	var formContainer = $('#'+obj.id).parent().parent().parent();
-	console.log(formContainer.attr('id'));
+	console.log(formContainer.attr('class'));
 	var emailPattern = /^([a-zA-Z0-9_.-])+@(([a-zA-Z0-9-])+.)+([a-zA-Z0-9]{2,4})+$/;
 	var emailSignup = formContainer.find('#email-signup');
-	if (emailPattern.test(emailSignup)){
+	if (emailPattern.test(emailSignup.val())){
 		var passSignup = formContainer.find('#password-signup');
 		var passRepeatSignup = formContainer.find('#password-repeat-signup');
 		emailSignup.parent().attr('class','form-group');
 		passSignup.parent().attr('class','form-group');
 		passRepeatSignup.parent().attr('class','form-group');
 		console.log('email signup invoked: '+emailSignup.val()+' ~ '+passSignup.val()+' ~ '+passRepeatSignup.val());
-		var conEmailSignup = new WebSocket("wss://book-trading-club-rfprod.c9users.io/emailsignup");
+		var conEmailSignup = new WebSocket("wss://pinpincs-rfprod.c9users.io/emailsignup");
 	    conEmailSignup.onopen = function(){
 		    console.log("Email sign up. Connection opened");
 		    conEmailSignup.send(emailSignup.val()+'|'+passSignup.val()+'|'+passRepeatSignup.val());

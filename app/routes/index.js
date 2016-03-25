@@ -82,6 +82,10 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 		});
 	});
 	app.route('/login').get(function (req, res) {
+		Users.find({},function(err, docs) {
+		    if (err) throw err;
+		    console.log(docs);
+		});
 		if (isLoggedInBool(req,res)) res.redirect('/profile');
 		else res.sendFile(path + '/public/login.html');
 	});
@@ -118,8 +122,12 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						    if (typeof userPics != 'undefined') $('#profile-links').html(userPics.length);
 						    else $('#profile-links').html('0');
 						    if (typeof docs[0].github.id != 'undefined') $('#twtr-logo').remove();
-						    else {
+						    else if (typeof docs[0].twitter.id != 'undefined') {
 						    	$('#gh-logo').remove();
+						    	$('#profile-repos').parent().remove();
+						    }else{
+						    	$('#gh-logo').remove();
+						    	$('#twtr-logo').remove();
 						    	$('#profile-repos').parent().remove();
 						    }
 				        	var userExtended = docs[0].userExtended;
@@ -235,7 +243,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 	    ws.on('error', function() {console.log('Remove book: ERROR');});
 	});
 	
-	app.ws(/emailsignup/, function(ws, res){
+	app.ws('/emailsignup/', function(ws, res){
     	console.log('/emailsignup');
     	ws.on('message', function(msg){
 			console.log('email sign up: '+msg);
