@@ -300,7 +300,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 		console.log('emailLogin: '+emailLogin+" | passwordLogin: "+passwordLogin);
 	    res.redirect('/profile');
 	});
-	app.ws('/edituser', function(ws, res){
+	app.ws('/edituser/', function(ws, res){
 		console.log('/edituser');
 		var authedUserId = ws.upgradeReq.session.passport.user;
 		ws.on('message', function(msg){

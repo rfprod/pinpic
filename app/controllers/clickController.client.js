@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-   var editUserExtendedButton = document.querySelector('#edit-user-extended');
+   var editUserExtendedButton = document.querySelector('.edit');
    var doneUserExtendedButton = document.querySelector('.done');
    var profileEmail = document.querySelector('#profile-email');
    var profileFullName = document.querySelector('#profile-fullname');
@@ -21,7 +21,7 @@
       editUserExtendedButton.style.display = 'none';
       doneUserExtendedButton.style.display = 'block';
    }
-   function doneUderExtended(){
+   function doneUserExtended(){
       profileEmail.setAttribute('readonly','readonly');
       profileFullName.setAttribute('readonly','readonly');
       profileCity.setAttribute('readonly','readonly');
@@ -36,14 +36,14 @@
    
    doneUserExtendedButton.addEventListener('click', function(){
       console.log('user data edit invoked, new data: '+profileEmail.value+'~'+profileFullName.value+'~'+profileCity.value+'~'+profileState.value);
-		var connEditUser = new WebSocket("wss://book-trading-club-rfprod.c9users.io/edituser");
+		var connEditUser = new WebSocket("wss://pinpincs-rfprod.c9users.io/edituser");
 	    connEditUser.onopen = function(){
 		    console.log("Editing user data. Connection opened");
 		    connEditUser.send(profileEmail.value+'|'+profileFullName.value+'|'+profileCity.value+'|'+profileState.value);
 	    }
 	    connEditUser.onmessage = function(evt){
 		    console.info("Received "+JSON.stringify(evt.data));
-		    doneUderExtended();
+		    doneUserExtended();
 		    connEditUser.close();
 	    };
 	    connEditUser.onerror = function(error){
