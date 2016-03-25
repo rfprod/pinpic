@@ -5,7 +5,6 @@ var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 var clickHandler = new ClickHandler();
 
 var Users = require('../models/users');
-var https = require('https');
 
 module.exports = function (app, passport, jsdom, fs, syncrec) {
 	
@@ -118,6 +117,11 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						    console.log(userPics);
 						    if (typeof userPics != 'undefined') $('#profile-links').html(userPics.length);
 						    else $('#profile-links').html('0');
+						    if (typeof docs[0].github.id != 'undefined') $('#twtr-logo').remove();
+						    else {
+						    	$('#gh-logo').remove();
+						    	$('#profile-repos').parent().remove();
+						    }
 				        	var userExtended = docs[0].userExtended;
 				        	if (typeof userExtended.email != 'undefined' && userExtended.email != '') $('input[id="profile-email"]').attr('value', userExtended.email);
 				        	if (typeof userExtended.fullName != 'undefined' && userExtended.fullName != '') $('input[id="profile-fullname"]').attr('value', userExtended.fullName);
@@ -201,7 +205,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 								gridItem.find('#url-img').attr('src',msg);
 								gridItem.find('#img-name').html(linkName);
 								gridItem.find('#owner-link').html(authedUserId);
-								gridItem.find('#owner-link').attr('href',''+authedUserId);
+								gridItem.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile-'+authedUserId);
 								//gridItem.find('remove-link')
 								console.log("index page DOM manipulations complete");
 								newHtml = serializeDocument(window.document);
@@ -375,10 +379,16 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 	});
 	
 	app.route('/api/:id').get(isLoggedIn, function (req, res) {
-		res.json(req.user.github);
+		if (typeof req.user.github.id != 'undefined') res.json(req.user.github);
+		else if (typeof req.user.twitter.id != 'undefined') res.json(req.user.twitter);
 	});
 	app.route('/auth/github').get(passport.authenticate('github'));
 	app.route('/auth/github/callback').get(passport.authenticate('github', {
+		successRedirect: '/profile',
+		failureRedirect: '/login'
+	}));
+	app.route('/auth/twitter').get(passport.authenticate('twitter'));
+	app.route('/auth/twitter/callback').get(passport.authenticate('twitter', {
 		successRedirect: '/profile',
 		failureRedirect: '/login'
 	}));
