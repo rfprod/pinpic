@@ -33,7 +33,6 @@ $(document).ready(function(){
 			console.log('replacing image with dimensions: '+width+'/'+height);
 			$(this).attr('src','');
 			$(this).attr('data-src','holder.js/'+width+'x'+height+'?text=Broken');
-			//$('.grid').masonry('reloadItems');
 		});
 	});
 });

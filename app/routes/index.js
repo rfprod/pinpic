@@ -66,7 +66,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 										gridItemContainer.find('#url-img').attr('src',userPics[z].url);
 										gridItemContainer.find('#img-name').html(userPics[z].name);
 										gridItemContainer.find('#owner-link').html(userId.toString());
-										gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile/'+userId);
+										gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile-'+userId);
 										gridItemContainer.find('#remove-link').remove();
 									}
 						        }
@@ -139,7 +139,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 									gridItemContainer.find('#url-img').attr('src',userPics[z].url);
 									gridItemContainer.find('#img-name').html(userPics[z].name);
 									gridItemContainer.find('#owner-link').html(authedUserId);
-									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile/'+authedUserId);
+									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile-'+authedUserId);
 									gridItemContainer.find('#remove-link').attr('id',userPics[z]._id);
 								}
 					        }
@@ -301,10 +301,10 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 	    ws.on('error', function() {console.log('Edit user data: ERROR');});
 	});
 	
-	app.route(new RegExp(/\/publicprofile\/[a-z0-9]{24}/)).get(function (req, res) {
-		console.log('/publicprofile');
-		var userId = '56f3eab22bebbdcc1516bdb4';
+	app.route(new RegExp(/\/publicprofile-[a-z0-9]{24}/)).get(function (req, res) {
 		console.log(req.url);
+		var userId = req.url.split('-')[1];
+		console.log('userId: '+userId);
 		var htmlSourceIndex = null;
 		var gridItemTemplate = null;
 		fs.readFile(path + "/app/models/grid-item.html","utf-8", function(err,data){
@@ -321,6 +321,11 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 						var $ = window.$;
 						console.log("profile page DOM successfully retrieved");
 						//$('.polls').html("IT'S ALIVE! ALIVE!!!!");
+						if (!isLoggedInBool(req,res)){
+							$('#my-pics-nav').remove();
+							$('#logout-nav').remove();
+							$('.navbar-nav').append("<li class='nav-pills'><a href='/login'><span class='glyphicon glyphicon-user'></span> Sign up / Login</a></li>");
+						}
 						console.log('getting books data from DB');
 						Users.find({_id: userId}, function(err, docs) {
 						    if (err) throw err;
@@ -354,8 +359,8 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 									gridItemContainer.find('#url-img').attr('src',userPics[z].url);
 									gridItemContainer.find('#img-name').html(userPics[z].name);
 									gridItemContainer.find('#owner-link').html(userId);
-									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile/'+userId);
-									gridItemContainer.find('#remove-link').attr('id',userPics[z]._id);
+									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile-'+userId);
+									gridItemContainer.find('#remove-link').remove();
 								}
 					        }
 					        console.log("index page DOM manipulations complete");
