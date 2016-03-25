@@ -63,6 +63,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 										var gridItemContainer = $('.grid-item').last();
 										gridItemContainer.attr('id',userPics[z]._id);
 										gridItemContainer.find('#url-img').attr('src',userPics[z].url);
+										gridItemContainer.find('#url-img').addClass(userPics[z]._id.toString());
 										gridItemContainer.find('#img-name').html(userPics[z].name);
 										gridItemContainer.find('#owner-link').html(userId.toString());
 										gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile-'+userId);
@@ -153,6 +154,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 									var gridItemContainer = $('.grid-item').last();
 									gridItemContainer.attr('id','container-'+userPics[z]._id);
 									gridItemContainer.find('#url-img').attr('src',userPics[z].url);
+									gridItemContainer.find('#url-img').addClass(userPics[z]._id.toString());
 									gridItemContainer.find('#img-name').html(userPics[z].name);
 									gridItemContainer.find('#owner-link').html(authedUserId);
 									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile-'+authedUserId);
@@ -381,6 +383,7 @@ module.exports = function (app, passport, jsdom, fs, syncrec) {
 									var gridItemContainer = $('.grid-item').last();
 									gridItemContainer.attr('id','container-'+userPics[z]._id);
 									gridItemContainer.find('#url-img').attr('src',userPics[z].url);
+									gridItemContainer.find('#url-img').addClass(userPics[z]._id.toString());
 									gridItemContainer.find('#img-name').html(userPics[z].name);
 									gridItemContainer.find('#owner-link').html(userId);
 									gridItemContainer.find('#owner-link').attr('href','https://pinpincs-rfprod.c9users.io/publicprofile-'+userId);

@@ -23,19 +23,21 @@ $(document).ready(function(){
 			$('#submit-btn').attr('onclick','addImageURL(this);');
 		}
 	});
+	
 	$('.grid').masonry({itemSelector: '.grid-item', percentPosition: true});
+	
 	console.log($('.grid').find('img'));
 	$('.grid').find('img').each(function(){
-		$(this).on("error", function () {
-			console.log('error loading '+$(this).parent().attr('id')+' | '+$(this).parent());
-			var height = $(this).height();
-			var width = $(this).width();
+		this.addEventListener("error", function () {
+			console.log(this);
+			var height = this.height;
+			var width = this.width;
 			console.log('replacing image with dimensions: '+width+'/'+height);
-			$(this).attr('src','');
-			$(this).attr('data-src','holder.js/'+width+'x'+height+'?text=Broken');
+			this.setAttribute('src','https://image.freepik.com/free-vector/polaroid-pictures-collage_23-2147495420.jpg');
 		});
 	});
 });
+
 function emailSignup(obj){
 	console.log(obj);
 	var formContainer = $('#'+obj.id).parent().parent().parent();
